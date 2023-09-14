@@ -14,7 +14,7 @@ from plaid.model.country_code import CountryCode
 # from plaid.model.payment_initiation_payment_create_request import PaymentInitiationPaymentCreateRequest
 # from plaid.model.payment_initiation_payment_get_request import PaymentInitiationPaymentGetRequest
 # from plaid.model.link_token_create_request_payment_initiation import LinkTokenCreateRequestPaymentInitiation
-# from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
+from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
 # from plaid.model.asset_report_create_request import AssetReportCreateRequest
@@ -96,6 +96,7 @@ mysql_config = {
   'raise_on_warnings': True
 }
 
+# Create Plaid Link token
 @app.route('/create_link_token', methods=['POST'])
 def create_link_token():
     try:
@@ -110,6 +111,30 @@ def create_link_token():
         )
         response = plaid_client.link_token_create(request)
         return jsonify(response.to_dict())
+    except plaid.ApiException as e:
+        return json.loads(e.body)
+
+# Exchange token flow - exchange a Link public_token for an API access_token
+# and save it for this user.
+# https://plaid.com/docs/#exchange-token-flow
+@app.route('/set_access_token', methods=['POST'])
+def get_access_token():
+    global access_token
+    global item_id
+    public_token = request.json['public_token']
+    user_id = request.json['user_id']
+    try:
+        exchange_request = ItemPublicTokenExchangeRequest(
+            public_token=public_token)
+        exchange_response = plaid_client.item_public_token_exchange(exchange_request)
+        access_token = exchange_response['access_token']
+        item_id = exchange_response['item_id']
+        print('Got {}\'s access token {}'.format(user_id, access_token))
+        # don't actually send access_token to client
+        # instead put it in a database, tie to authenticated user.
+        # TODO: save to db!
+        # HOW TO DETERMINE AUTHENTICATED USER?
+        return jsonify("YAY")
     except plaid.ApiException as e:
         return json.loads(e.body)
 
