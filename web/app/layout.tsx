@@ -6,8 +6,8 @@ import Navbar from './navbar/navbar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'SimpleFI',
-  description: 'SimpleFI Personal Finance',
+  title: 'Bettermint',
+  description: 'Better than Mint',
 }
 
 export default function RootLayout({
