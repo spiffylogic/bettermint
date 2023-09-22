@@ -118,7 +118,7 @@ def create_link_token():
 # and save it for this user.
 # https://plaid.com/docs/#exchange-token-flow
 @app.route('/set_access_token', methods=['POST'])
-def get_access_token():
+def set_access_token():
     global access_token
     global item_id
     public_token = request.json['public_token']
@@ -129,11 +129,9 @@ def get_access_token():
         exchange_response = plaid_client.item_public_token_exchange(exchange_request)
         access_token = exchange_response['access_token']
         item_id = exchange_response['item_id']
-        print('Got {}\'s access token {}'.format(user_id, access_token))
-        # don't actually send access_token to client
-        # instead put it in a database, tie to authenticated user.
-        # TODO: save to db!
-        # HOW TO DETERMINE AUTHENTICATED USER?
+        # Don't send access_token to client, save it in db.
+        if not save_access_token(user_id, access_token):
+          abort(500) # Something went wrong
         return jsonify("YAY")
     except plaid.ApiException as e:
         return json.loads(e.body)
@@ -146,7 +144,7 @@ def user(user_id):
   if request.method == 'POST':
     # modify/update the information for <user_id>
     # data = request.form # a multidict containing POST data
-    if not upsert(user_id, request.json['identifier'], request.json['display_name']):
+    if not upsert_user(user_id, request.json['identifier'], request.json['display_name']):
       abort(500) # Something went wrong
     return '{{}}'
   if request.method == 'DELETE':
@@ -156,15 +154,39 @@ def user(user_id):
     # POST Error 405 Method Not Allowed
     abort(405)
 
-def upsert(user_id, identifier, display_name) -> bool:
+def upsert_user(user_id, identifier, display_name) -> bool:
   try:
     connection = mysql.connector.connect(**mysql_config)
     cursor = connection.cursor()
+    sql_statement = """
+      INSERT INTO users (uid, identifier, display_name)
+      VALUES (%s, %s, %s)
+      ON DUPLICATE KEY UPDATE identifier = %s, display_name = %s
+    """
+    sql_data = (user_id, identifier, display_name, identifier, display_name)
+    cursor.execute(sql_statement, sql_data)
 
-    sql_statement = ("REPLACE INTO users "
-                  "(uid, identifier, display_name) "
-                  "VALUES (%s, %s, %s)")
-    sql_data = (user_id, identifier, display_name)
+    connection.commit()
+    cursor.close()
+    connection.close()
+    return True
+  except mysql.connector.Error as err:
+    if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
+      print("Access to DB denied")
+    elif err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
+      print("Bad DB")
+    else:
+      print(err)
+  return False
+
+def save_access_token(user_id, access_token) -> bool:
+  try:
+    connection = mysql.connector.connect(**mysql_config)
+    cursor = connection.cursor()
+    sql_statement = """
+      UPDATE users SET plaid_access_token = %s WHERE uid = %s
+    """
+    sql_data = (access_token, user_id)
     cursor.execute(sql_statement, sql_data)
     connection.commit()
     cursor.close()
