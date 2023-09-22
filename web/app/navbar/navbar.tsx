@@ -1,25 +1,26 @@
 'use client';
 
+import UserContext from '../contexts/userContext';
 import { onAuthStateChangedHelper } from '../firebase/firebase';
 import SignIn from './sign-in';
 
 import { User } from 'firebase/auth';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
-// Note: This react function component is an example of JavaScript closures.
+// Note: This react function component is an example of a JavaScript closure.
 // State is maintained inside the function, via useState, even after it returns.
 export default function Navbar() {
     // Init user state
     const [user, setUser] = useState<User | null>(null);
+    const { setUserContext } = useContext(UserContext);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChangedHelper((user) => {
-            console.log(`onAuthStateChangedHelper ${user?.displayName} ${ user?.email} ${ user?.uid}`)
             setUser(user);
+            setUserContext(user)
             if (user && user?.uid) {
-
                 const requestOptions = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -28,11 +29,7 @@ export default function Navbar() {
                         display_name: user?.displayName
                     })
                 };
-                fetch(`http://localhost:5000/users/${user?.uid}`, requestOptions)
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log("MARKUS");
-                    });
+                fetch(`http://localhost:5000/users/${user?.uid}`, requestOptions);
             }
         });
 
