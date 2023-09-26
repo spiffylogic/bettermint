@@ -130,7 +130,7 @@ def set_access_token():
         access_token = exchange_response['access_token']
         item_id = exchange_response['item_id']
         # Don't send access_token to client, save it in db.
-        if not save_access_token(user_id, access_token):
+        if not save_access_token(user_id, access_token, item_id):
           abort(500) # Something went wrong
         return jsonify("YAY")
     except plaid.ApiException as e:
@@ -154,40 +154,32 @@ def user(user_id):
     # POST Error 405 Method Not Allowed
     abort(405)
 
+### MYSQL
+
+# Note: user_id in the code corresponds to the provider_uid in the database.
 def upsert_user(user_id, identifier, display_name) -> bool:
+  sql_statement = """
+    INSERT INTO users (provider_uid, identifier, display_name)
+    VALUES (%s, %s, %s)
+    ON DUPLICATE KEY UPDATE provider_uid = %s, identifier = %s, display_name = %s
+  """
+  sql_data = (user_id, identifier, display_name, user_id, identifier, display_name)
+  return run_sql(sql_statement, sql_data)
+
+def save_access_token(user_id, access_token, item_id) -> bool:
+  sql_statement = """
+    INSERT INTO plaid (user_id, access_token, item_id)
+    SELECT id, %s, %s FROM users WHERE provider_uid = %s
+    ON DUPLICATE KEY UPDATE access_token = %s, item_id = %s
+  """
+  sql_data = (access_token, item_id, user_id, access_token, item_id)
+  return run_sql(sql_statement, sql_data)
+
+def run_sql(statement, data) -> bool:
   try:
     connection = mysql.connector.connect(**mysql_config)
     cursor = connection.cursor()
-    sql_statement = """
-      INSERT INTO users (uid, identifier, display_name)
-      VALUES (%s, %s, %s)
-      ON DUPLICATE KEY UPDATE identifier = %s, display_name = %s
-    """
-    sql_data = (user_id, identifier, display_name, identifier, display_name)
-    cursor.execute(sql_statement, sql_data)
-
-    connection.commit()
-    cursor.close()
-    connection.close()
-    return True
-  except mysql.connector.Error as err:
-    if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
-      print("Access to DB denied")
-    elif err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
-      print("Bad DB")
-    else:
-      print(err)
-  return False
-
-def save_access_token(user_id, access_token) -> bool:
-  try:
-    connection = mysql.connector.connect(**mysql_config)
-    cursor = connection.cursor()
-    sql_statement = """
-      UPDATE users SET plaid_access_token = %s WHERE uid = %s
-    """
-    sql_data = (access_token, user_id)
-    cursor.execute(sql_statement, sql_data)
+    cursor.execute(statement, data)
     connection.commit()
     cursor.close()
     connection.close()
