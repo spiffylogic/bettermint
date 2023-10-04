@@ -154,25 +154,56 @@ def user(user_id):
     # POST Error 405 Method Not Allowed
     abort(405)
 
+@app.route('/accounts', methods = ['GET', 'POST'])
+def accounts():
+  user_id = request.json['user_id']
+  if request.method == 'GET':
+    # TODO: return the list of accounts for <user_id>
+    return '{{}}'
+  if request.method == 'POST':
+    # Determine if it is a single account or list of accounts
+    account = request.json.get('account')
+    if account:
+      save_account(user_id, account.get('name'), account.get('number'))
+      return '{{}}'
+    accounts = request.json.get('accounts')
+    if accounts:
+      for account in accounts:
+        # TODO: add all accounts in a single SQL query
+        save_account(user_id, account.get('name'), account.get('number'))
+      return '{{}}'
+    return '{{}}'
+  else:
+    # POST Error 405 Method Not Allowed
+    abort(405)
+
 ### MYSQL
 
-# Note: user_id in the code corresponds to the provider_uid in the database.
 def upsert_user(user_id, identifier, display_name) -> bool:
   sql_statement = """
-    INSERT INTO users (provider_uid, identifier, display_name)
+    INSERT INTO users (id, identifier, display_name)
     VALUES (%s, %s, %s)
-    ON DUPLICATE KEY UPDATE provider_uid = %s, identifier = %s, display_name = %s
+    ON DUPLICATE KEY UPDATE identifier = %s, display_name = %s
   """
-  sql_data = (user_id, identifier, display_name, user_id, identifier, display_name)
+  sql_data = (user_id, identifier, display_name, identifier, display_name)
   return run_sql(sql_statement, sql_data)
 
 def save_access_token(user_id, access_token, item_id) -> bool:
   sql_statement = """
     INSERT INTO plaid (user_id, access_token, item_id)
-    SELECT id, %s, %s FROM users WHERE provider_uid = %s
+    VALUES (%s, %s, %s)
     ON DUPLICATE KEY UPDATE access_token = %s, item_id = %s
   """
-  sql_data = (access_token, item_id, user_id, access_token, item_id)
+  sql_data = (user_id, access_token, item_id, access_token, item_id)
+  return run_sql(sql_statement, sql_data)
+
+def save_account(user_id, account_name, account_number) -> bool:
+  sql_statement = """
+    INSERT INTO accounts (user_id, name, number)
+    VALUES (%s, %s, %s)
+    ON DUPLICATE KEY UPDATE name = %s, number = %s
+  """
+  sql_data = (user_id, account_name, account_number, account_name, account_number)
   return run_sql(sql_statement, sql_data)
 
 def run_sql(statement, data) -> bool:

@@ -6,6 +6,7 @@ import {
     usePlaidLink,
     PlaidLinkOptions,
     PlaidLinkOnSuccess,
+    PlaidAccount,
   } from 'react-plaid-link';
 
 export default function Link() {
@@ -37,6 +38,24 @@ export default function Link() {
         const response = await fetch('http://localhost:5000/set_access_token', requestOptions);
     };
 
+    async function saveAccounts(accounts: Array<PlaidAccount>, userId: string) {
+        console.log("Accounts:", accounts);
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                accounts: accounts.map((value: PlaidAccount, index: number, array: PlaidAccount[]) => {
+                    return {
+                        name: value.name,
+                        number: value.mask
+                    }
+                })
+            })
+        };
+        const response = await fetch('http://localhost:5000/accounts', requestOptions);
+    }
+
     // get link_token from your server when component mounts
     useEffect(() => {
         createLinkToken();
@@ -45,7 +64,9 @@ export default function Link() {
     const onSuccess = useCallback<PlaidLinkOnSuccess>((publicToken, metadata) => {
       // https://plaid.com/docs/api/tokens/#token-exchange-flow
       if (userRef.current) {
-        setAccessToken(publicToken, userRef.current?.uid);
+        const userId = userRef.current?.uid;
+        setAccessToken(publicToken, userId);
+        saveAccounts(metadata.accounts, userId);
       }
     }, []);
 
