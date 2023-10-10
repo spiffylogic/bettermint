@@ -156,10 +156,12 @@ def user(user_id):
 
 @app.route('/accounts', methods = ['GET', 'POST'])
 def accounts():
-  user_id = request.json['user_id']
+  user_id = request.args.get('user_id')
+
   if request.method == 'GET':
-    # TODO: return the list of accounts for <user_id>
-    return '{{}}'
+    # Return the list of accounts for <user_id>
+    return jsonify(get_accounts(user_id))
+
   if request.method == 'POST':
     # Determine if it is a single account or list of accounts
     account = request.json.get('account')
@@ -206,11 +208,20 @@ def save_account(user_id, account_name, account_number) -> bool:
   sql_data = (user_id, account_name, account_number, account_name, account_number)
   return run_sql(sql_statement, sql_data)
 
+def get_accounts(user_id) -> list:
+  sql_statement = """
+    SELECT * from accounts
+    WHERE user_id = %s
+  """
+  sql_data = (user_id, )
+  return run_sql_fetch(sql_statement, sql_data)
+
 def run_sql(statement, data) -> bool:
   try:
     connection = mysql.connector.connect(**mysql_config)
     cursor = connection.cursor()
     cursor.execute(statement, data)
+    cursor.fetchall()
     connection.commit()
     cursor.close()
     connection.close()
@@ -223,3 +234,27 @@ def run_sql(statement, data) -> bool:
     else:
       print(err)
   return False
+
+def run_sql_fetch(statement, data) -> list:
+  try:
+    connection = mysql.connector.connect(**mysql_config)
+    cursor = connection.cursor()
+    cursor.execute(statement, data)
+
+    rows = cursor.fetchall()
+    row_headers = [x[0] for x in cursor.description]
+    json_data = list(map(lambda x: dict(zip(row_headers, x)), rows))
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    return json_data
+  except mysql.connector.Error as err:
+    if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
+      print("Access to DB denied")
+    elif err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
+      print("Bad DB")
+    else:
+      print(err)
+  return []
