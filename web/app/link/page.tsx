@@ -39,12 +39,10 @@ export default function Link() {
     };
 
     async function saveAccounts(accounts: Array<PlaidAccount>, userId: string) {
-        console.log("Accounts:", accounts);
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                user_id: userId,
                 accounts: accounts.map((value: PlaidAccount, index: number, array: PlaidAccount[]) => {
                     return {
                         name: value.name,
@@ -53,7 +51,7 @@ export default function Link() {
                 })
             })
         };
-        const response = await fetch('http://localhost:5000/accounts', requestOptions);
+        const response = await fetch(`http://localhost:5000/accounts?user_id=${userId}`, requestOptions);
     }
 
     // get link_token from your server when component mounts
