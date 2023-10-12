@@ -43,7 +43,7 @@ export default function Navbar() {
             <Link href="/">
                 <Image src="/mint.svg"  width={128} height={128} alt="Logo" />
             </Link>
-            <div className="text-3xl font-bold">Bettermint</div>
+            <div className="text-3xl font-bold">bettermint</div>
             <SignIn user={user} />
         </nav>
     );
