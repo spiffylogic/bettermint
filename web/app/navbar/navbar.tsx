@@ -39,10 +39,11 @@ export default function Navbar() {
     }, []);
 
     return (
-        <nav>
+        <nav className="flex flex-row justify-center items-baseline space-x-4 py-10">
             <Link href="/">
                 <Image src="/mint.svg"  width={128} height={128} alt="Logo" />
             </Link>
+            <div className="text-3xl font-bold">Bettermint</div>
             <SignIn user={user} />
         </nav>
     );
