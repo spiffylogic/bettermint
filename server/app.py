@@ -130,3 +130,15 @@ def accounts():
   else:
     # POST Error 405 Method Not Allowed
     abort(405)
+
+# Get transactions that we have already synced from Plaid (client refresh).
+@app.route('/transactions', methods = ['GET'])
+def transactions():
+  # TODO: load all transactions from db for this user.
+  return '{{}}'
+
+# Sync transactions from Plaid (server refresh).
+@app.route('/transactions/sync', methods = ['POST'])
+def transactions_sync():
+  # TODO: ask plaid to sync transactions using this user's access token
+  return '{{}}'
