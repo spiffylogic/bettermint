@@ -7,19 +7,17 @@ import SignIn from './sign-in';
 import { User } from 'firebase/auth';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 
 // Note: This react function component is an example of a JavaScript closure.
 // State is maintained inside the function, via useState, even after it returns.
 export default function Navbar() {
     // Init user state
-    const [user, setUser] = useState<User | null>(null);
-    const { setUserContext } = useContext(UserContext);
+    const { user, setUser } = useContext(UserContext);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChangedHelper((user) => {
+        const unsubscribe = onAuthStateChangedHelper((user: User | null) => {
             setUser(user);
-            setUserContext(user)
             if (user && user?.uid) {
                 const requestOptions = {
                     method: 'POST',

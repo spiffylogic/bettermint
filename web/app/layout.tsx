@@ -4,8 +4,10 @@ import './globals.css'
 // import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Navbar from './navbar/navbar'
-import UserContext from "./contexts/userContext";
+import AppContext from "./contexts/userContext";
 import { useState } from 'react'
+import { UserContext } from './types/globalContext';
+import { User } from 'firebase/auth';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,15 +21,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [user, setUserContext] = useState();
+  const [context, setContext] = useState<UserContext>({} as UserContext);
+  const [user,setUser] = useState<User | null>(null);
   return (
-    <UserContext.Provider value={{user, setUserContext}}>
+    <AppContext.Provider value={{...context, setContext,user,setUser}}>
       <html lang="en">
         <body className={inter.className}>
           <Navbar />
           {children}
         </body>
       </html>
-    </UserContext.Provider>
+    </AppContext.Provider>
   )
 }

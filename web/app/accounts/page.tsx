@@ -2,14 +2,10 @@
 
 import { useContext, useEffect, useState } from "react";
 import UserContext from '../contexts/userContext';
-
-interface Account {
-    number: string;
-    name: string;
-}
+import {Account} from '../types/account';
 
 export default function Accounts() {
-    const [accounts, setAccounts] = useState([]);
+    const [accounts, setAccounts] = useState<Account[]>([]);
     const { user } = useContext(UserContext);
 
     const getAccounts = async () => {
@@ -27,7 +23,7 @@ export default function Accounts() {
             <h1>Accounts Page</h1>
             <p>USERID: {user?.uid}</p>
             <center>
-                { accounts.map((account: Account, index) => {
+                { accounts.map((account: Account, index: number) => {
                     return (
                         <div key={index}>
                             <p>{ account.number  + " " + account.name }</p>
