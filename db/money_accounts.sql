@@ -24,15 +24,15 @@ DROP TABLE IF EXISTS `accounts`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `accounts` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(128) NOT NULL COMMENT 'The user ID of the owner of the account',
+  `user_id` varchar(128) NOT NULL COMMENT 'The user ID for the account owner.',
   `number` varchar(20) NOT NULL COMMENT 'This could be the masked number from Plaid.',
   `name` varchar(150) DEFAULT NULL,
   `type` varchar(20) DEFAULT NULL,
   `balance` decimal(19,4) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `account_UNIQUE` (`user_id`,`number`),
+  KEY `fk_accounts_user_id_idx` (`user_id`),
   CONSTRAINT `fk_accounts_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=87 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -44,4 +44,4 @@ CREATE TABLE `accounts` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-04 14:56:25
+-- Dump completed on 2023-10-25 11:54:29

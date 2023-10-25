@@ -19,11 +19,11 @@ def upsert_user(user_id, identifier, display_name) -> bool:
 
 def save_access_token(user_id, access_token, item_id) -> bool:
   sql_statement = """
-    INSERT INTO plaid (user_id, access_token, item_id)
+    INSERT INTO items (id, user_id, access_token)
     VALUES (%s, %s, %s)
-    ON DUPLICATE KEY UPDATE access_token = %s, item_id = %s
+    ON DUPLICATE KEY UPDATE user_id = %s, access_token = %s
   """
-  sql_data = (user_id, access_token, item_id, access_token, item_id)
+  sql_data = (item_id, user_id, access_token, user_id, access_token)
   return run_sql(sql_statement, sql_data)
 
 def save_account(user_id, account_name, account_number) -> bool:
@@ -38,6 +38,14 @@ def save_account(user_id, account_name, account_number) -> bool:
 def get_accounts(user_id) -> list:
   sql_statement = """
     SELECT * from accounts
+    WHERE user_id = %s
+  """
+  sql_data = (user_id, )
+  return run_sql_fetch(sql_statement, sql_data)
+
+def get_plaid_items(user_id) -> list:
+  sql_statement = """
+    SELECT id, access_token from items
     WHERE user_id = %s
   """
   sql_data = (user_id, )

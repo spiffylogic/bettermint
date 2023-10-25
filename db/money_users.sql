@@ -27,8 +27,7 @@ CREATE TABLE `users` (
   `identifier` varchar(256) NOT NULL COMMENT 'The user identifier, which could be their email address.',
   `display_name` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `provider_id_UNIQUE` (`id`),
-  UNIQUE KEY `identifier_UNIQUE` (`identifier`)
+  UNIQUE KEY `provider_id_UNIQUE` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -41,4 +40,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-04 14:56:26
+-- Dump completed on 2023-10-25 11:54:29

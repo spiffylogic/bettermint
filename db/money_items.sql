@@ -16,22 +16,21 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `plaid`
+-- Table structure for table `items`
 --
 
-DROP TABLE IF EXISTS `plaid`;
+DROP TABLE IF EXISTS `items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `plaid` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
+CREATE TABLE `items` (
+  `id` varchar(128) NOT NULL,
   `user_id` varchar(128) NOT NULL,
   `access_token` varchar(2048) NOT NULL,
-  `item_id` varchar(128) NOT NULL,
+  `bank_name` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `item_id_UNIQUE` (`item_id`),
-  KEY `fk_plaid_user_id_idx` (`user_id`),
-  CONSTRAINT `fk_plaid_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `fk_items_user_id_idx` (`user_id`),
+  CONSTRAINT `fk_items_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -43,4 +42,4 @@ CREATE TABLE `plaid` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-04 14:56:25
+-- Dump completed on 2023-10-25 11:54:29
