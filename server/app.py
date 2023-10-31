@@ -19,7 +19,7 @@ from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUse
 # from plaid.model.asset_report_get_request import AssetReportGetRequest
 # from plaid.model.asset_report_pdf_get_request import AssetReportPDFGetRequest
 # from plaid.model.auth_get_request import AuthGetRequest
-# from plaid.model.transactions_sync_request import TransactionsSyncRequest
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
 # from plaid.model.identity_get_request import IdentityGetRequest
 # from plaid.model.investments_transactions_get_request_options import InvestmentsTransactionsGetRequestOptions
 # from plaid.model.investments_transactions_get_request import InvestmentsTransactionsGetRequest
@@ -37,11 +37,13 @@ from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUse
 # from plaid.model.ach_class import ACHClass
 # from plaid.model.transfer_create_idempotency_key import TransferCreateIdempotencyKey
 # from plaid.model.transfer_user_address_in_request import TransferUserAddressInRequest
+import pprint
 import time
 
 # Local imports
-from sql import *
+from model import *
 from plaid_setup import plaid_client, plaid_country_codes, plaid_products
+from sql import *
 
 app = Flask(__name__)
 CORS(app)
@@ -118,13 +120,13 @@ def accounts():
     # Determine if it is a single account or list of accounts
     account = request.json.get('account')
     if account:
-      save_account(user_id, account.get('name'), account.get('number'))
+      save_account(account.get('id'), user_id, account.get('name'), account.get('number'))
       return '{{}}'
     accounts = request.json.get('accounts')
     if accounts:
       for account in accounts:
         # TODO: add all accounts in a single SQL query
-        save_account(user_id, account.get('name'), account.get('number'))
+        save_account(account.get('id'), user_id, account.get('name'), account.get('number'))
       return '{{}}'
     return '{{}}'
   else:
@@ -132,6 +134,7 @@ def accounts():
     abort(405)
 
 # Get transactions that we have already synced from Plaid (client refresh).
+# TODO: also implement individual transaction gets by id.
 @app.route('/transactions', methods = ['GET'])
 def transactions():
   # TODO: load all transactions from db for this user.
@@ -140,5 +143,40 @@ def transactions():
 # Sync transactions from Plaid (server refresh).
 @app.route('/transactions/sync', methods = ['POST'])
 def transactions_sync():
-  # TODO: ask plaid to sync transactions using this user's access token
+  user_id = request.args.get('user_id')
+  items = get_plaid_items(user_id)
+  for item in items:
+     sync_transactions(user_id, item['access_token'], item['transaction_cursor'])
   return '{{}}'
+
+def sync_transactions(user_id: str, access_token: str, cursor: str):
+  print("SYNC TRANSACTIONS FOR {}, {}, {}".format(user_id, access_token, cursor))
+  try:
+    added, modified, removed, cursor = fetch_new_sync_data(access_token, cursor if cursor else "")
+
+    for transaction in added:
+      simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
+      add_new_transaction(simple_transaction)
+
+    # TODO: handle modified, removed
+
+  except plaid.ApiException as e:
+    print("SYNC ERROR {}".format(e.body))
+    # return json.loads(e.body)
+
+def fetch_new_sync_data(access_token: str, initial_cursor: str) -> tuple:
+  keep_going = False
+  added, modified, removed, cursor = [], [], [], initial_cursor
+  while True:
+    request = TransactionsSyncRequest(access_token)
+    request.cursor = cursor
+    response = plaid_client.transactions_sync(request)
+    print("Added: {}, modified: {}, removed: {}".format(len(response.added), len(response.modified), len(response.removed)))
+    print("Cursor: {}".format(response.next_cursor))
+    added += response.added
+    modified += response.modified
+    removed += response.removed
+    cursor = response.next_cursor
+    keep_going = response.has_more
+    if not keep_going: break
+  return (added, modified, removed, cursor)

@@ -39,6 +39,7 @@ export default function Link() {
             body: JSON.stringify({
                 accounts: accounts.map((value: PlaidAccount, index: number, array: PlaidAccount[]) => {
                     return {
+                        id: value.id,
                         name: value.name,
                         number: value.mask
                     }
