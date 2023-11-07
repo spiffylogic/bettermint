@@ -1,5 +1,6 @@
 import mysql.connector
 from pprint import pprint
+from typing import *
 
 from model import SimpleTransaction
 
@@ -62,10 +63,20 @@ def remove_account(account_id: str) -> bool:
   sql_data = (account_id, )
   return db_write(sql_statement, sql_data)
 
+def get_transaction(id: str) -> Optional[SimpleTransaction]:
+  sql_statement = """
+    SELECT id, account_id, date, name, amount
+    FROM transactions
+    WHERE id = %s
+  """
+  sql_data = (id, )
+  rows = db_read(sql_statement, sql_data)
+  if len(rows) != 1: return None
+  return SimpleTransaction.fromSQLTransaction(rows[0])
+
 def add_new_transaction(transaction: SimpleTransaction):
-  print("ADDING {}".format(transaction.id))
-  pprint(vars(transaction))
-  # TODO: need account ID or user ID.
+  # print("ADDING {}".format(transaction.id))
+  # pprint(vars(transaction))
   # TODO: maybe handle duplicate insertions.
   sql_statement = """
     INSERT INTO transactions
@@ -81,18 +92,28 @@ def add_new_transaction(transaction: SimpleTransaction):
 
   return db_write(sql_statement, sql_data)
 
-def delete_transaction(transaction: SimpleTransaction):
-  print("REMOVING {}".format(transaction.id))
+def modify_transaction(transaction: SimpleTransaction):
   sql_statement = """
-    DELETE from transactions WHERE id = %s
+    UPDATE transactions
+    SET account_id = %s, date = %s, name = %s, amount = %s
+    WHERE id = %s
   """
-  sql_data = (transaction.id, )
+  sql_data = (transaction.account_id, transaction.date, transaction.name or "", transaction.amount, transaction.id)
   return db_write(sql_statement, sql_data)
 
-
-def get_plaid_items(user_id) -> list:
+def delete_transaction(transaction_id: str):
+  print("REMOVING {}".format(transaction_id))
+  # Consider marking removed instead of deleting, but you'd need to rename the ID
+  # (e.g. transactionId + "-REMOVED-" + random UUID) to avoid future collisions
   sql_statement = """
-    SELECT id, access_token, transaction_cursor from items
+    DELETE FROM transactions WHERE id = %s
+  """
+  sql_data = (transaction_id, )
+  return db_write(sql_statement, sql_data)
+
+def get_plaid_items(user_id) -> list[dict]:
+  sql_statement = """
+    SELECT id, access_token, transaction_cursor FROM items
     WHERE user_id = %s
   """
   sql_data = (user_id, )
@@ -125,7 +146,7 @@ def db_write(statement, data) -> bool:
       connection.close()
 
 # Returns list of data as list of json (dict).
-def db_read(statement, data) -> list:
+def db_read(statement, data) -> list[dict]:
   try:
     connection = mysql.connector.connect(**mysql_config)
     cursor = connection.cursor()

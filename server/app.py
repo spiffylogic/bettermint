@@ -151,14 +151,25 @@ def transactions_sync():
 
 def sync_transactions(user_id: str, access_token: str, cursor: str):
   print("SYNC TRANSACTIONS FOR {}, {}, {}".format(user_id, access_token, cursor))
+  added_count, removed_count, modified_count = 0, 0, 0
   try:
     added, modified, removed, cursor = fetch_new_sync_data(access_token, cursor if cursor else "")
 
     for transaction in added:
       simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
       add_new_transaction(simple_transaction)
+      added_count += 1
 
-    # TODO: handle modified, removed
+    for transaction in modified:
+      simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
+      modify_transaction(simple_transaction)
+      modified_count += 1
+
+    for transaction in removed:
+      delete_transaction(transaction["transaction_id"])
+      removed_count += 1
+
+    print("DONE SYNC: {}, {}, {}".format(added_count, removed_count, modified_count))
 
   except plaid.ApiException as e:
     print("SYNC ERROR {}".format(e.body))
