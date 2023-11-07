@@ -48,7 +48,7 @@ class SimpleTransaction:
       txnObj['id'], # ID
       None,                   # UserID
       txnObj['account_id'],     # Account ID
-      None, #txnObj['personal_finance_category']['primary'], # Category
+      None, # txnObj['personal_finance_category']['primary'], # Category
       txnObj['date'],           # Date (datetime.date)
       None, # txnObj.get('authorized_date'), # Authorized Date (if available)
       txnObj['merchant_name'] if 'merchant_name' in txnObj else txnObj['name'],  # Name

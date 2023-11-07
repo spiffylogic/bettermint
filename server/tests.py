@@ -20,15 +20,15 @@ class TransactionTests(unittest.TestCase):
   def setUp(self) -> None:
     # For now, use test data in the MySQL db.
     # Consider using mock database (https://medium.com/swlh/python-testing-with-a-mock-database-sql-68f676562461).
-    sql.upsert_user(TEST_USER_ID, "", "")
+    sql.save_user(TEST_USER_ID, "", "")
     sql.save_account(TEST_ACCOUNT_ID, TEST_USER_ID, "", "")
     tx = SimpleTransaction.fromPlaidTransaction(SAMPLE_TX, TEST_USER_ID)
-    sql.add_new_transaction(tx)
+    sql.add_transaction(tx)
     return super().setUp()
 
   def tearDown(self) -> None:
     # This should have a cascade deletion effect on other tables.
-    sql.remove_user(TEST_USER_ID)
+    sql.delete_user(TEST_USER_ID)
     return super().tearDown()
 
   # Mock fetch_new_sync_data() to return sample data for test

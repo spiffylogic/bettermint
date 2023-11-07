@@ -12,7 +12,7 @@ mysql_config = {
   'raise_on_warnings': True
 }
 
-def upsert_user(user_id, identifier, display_name) -> bool:
+def save_user(user_id, identifier, display_name) -> bool:
   sql_statement = """
     INSERT INTO users (id, identifier, display_name)
     VALUES (%s, %s, %s)
@@ -21,7 +21,7 @@ def upsert_user(user_id, identifier, display_name) -> bool:
   sql_data = (user_id, identifier, display_name, identifier, display_name)
   return db_write(sql_statement, sql_data)
 
-def remove_user(user_id: str) -> bool:
+def delete_user(user_id: str) -> bool:
   sql_statement = """
     DELETE FROM users
     WHERE id = %s
@@ -55,7 +55,7 @@ def get_accounts(user_id) -> list:
   sql_data = (user_id, )
   return db_read(sql_statement, sql_data)
 
-def remove_account(account_id: str) -> bool:
+def delete_account(account_id: str) -> bool:
   sql_statement = """
     DELETE FROM accounts
     WHERE id = %s
@@ -74,7 +74,7 @@ def get_transaction(id: str) -> Optional[SimpleTransaction]:
   if len(rows) != 1: return None
   return SimpleTransaction.fromSQLTransaction(rows[0])
 
-def add_new_transaction(transaction: SimpleTransaction):
+def add_transaction(transaction: SimpleTransaction):
   # print("ADDING {}".format(transaction.id))
   # pprint(vars(transaction))
   # TODO: maybe handle duplicate insertions.
@@ -113,11 +113,21 @@ def delete_transaction(transaction_id: str):
 
 def get_plaid_items(user_id) -> list[dict]:
   sql_statement = """
-    SELECT id, access_token, transaction_cursor FROM items
+    SELECT id, access_token, transaction_cursor
+    FROM items
     WHERE user_id = %s
   """
   sql_data = (user_id, )
   return db_read(sql_statement, sql_data)
+
+def save_transaction_cursor(item_id: str, cursor: str):
+  sql_statement = """
+    UPDATE items
+    SET transaction_cursor = %s
+    WHERE id = %s
+  """
+  sql_data = (cursor, item_id)
+  return db_write(sql_statement, sql_data)
 
 # Returns boolean indicating success/failure.
 def db_write(statement, data) -> bool:

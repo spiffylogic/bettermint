@@ -97,7 +97,7 @@ def user(user_id):
   if request.method == 'POST':
     # modify/update the information for <user_id>
     # data = request.form # a multidict containing POST data
-    if not upsert_user(user_id, request.json['identifier'], request.json['display_name']):
+    if not save_user(user_id, request.json['identifier'], request.json['display_name']):
       abort(500) # Something went wrong
     return '{{}}'
   if request.method == 'DELETE':
@@ -144,30 +144,38 @@ def transactions():
 @app.route('/transactions/sync', methods = ['POST'])
 def transactions_sync():
   user_id = request.args.get('user_id')
+  # 1. fetch most recent cursor from the db
   items = get_plaid_items(user_id)
   for item in items:
-     sync_transactions(user_id, item['access_token'], item['transaction_cursor'])
+     sync_transactions(user_id, item['id'], item['access_token'], item['transaction_cursor'])
   return '{{}}'
 
-def sync_transactions(user_id: str, access_token: str, cursor: str):
+def sync_transactions(user_id: str, item_id: str, access_token: str, cursor: str):
   print("SYNC TRANSACTIONS FOR {}, {}, {}".format(user_id, access_token, cursor))
   added_count, removed_count, modified_count = 0, 0, 0
   try:
+    # 2. fetch all transactions since last cursor
     added, modified, removed, cursor = fetch_new_sync_data(access_token, cursor if cursor else "")
 
+    # 3. add new transactions to our database
     for transaction in added:
       simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
-      add_new_transaction(simple_transaction)
+      add_transaction(simple_transaction)
       added_count += 1
 
+    # 4. update modified transactions
     for transaction in modified:
       simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
       modify_transaction(simple_transaction)
       modified_count += 1
 
+    # 5. process removed transactions
     for transaction in removed:
       delete_transaction(transaction["transaction_id"])
       removed_count += 1
+
+    # 6. save most recent cursor
+    save_transaction_cursor(item_id, cursor)
 
     print("DONE SYNC: {}, {}, {}".format(added_count, removed_count, modified_count))
 
@@ -182,8 +190,7 @@ def fetch_new_sync_data(access_token: str, initial_cursor: str) -> tuple:
     request = TransactionsSyncRequest(access_token)
     request.cursor = cursor
     response = plaid_client.transactions_sync(request)
-    print("Added: {}, modified: {}, removed: {}".format(len(response.added), len(response.modified), len(response.removed)))
-    print("Cursor: {}".format(response.next_cursor))
+    print("Added: {}, modified: {}, removed: {}, cursor: {}".format(len(response.added), len(response.modified), len(response.removed), response.next_cursor))
     added += response.added
     modified += response.modified
     removed += response.removed
