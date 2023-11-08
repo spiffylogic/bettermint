@@ -1,13 +1,9 @@
 from flask import abort, Flask, jsonify, request
 from flask_cors import CORS
-import json, os, time
-import mysql.connector
-
+import json
 import plaid
 # from plaid.model.payment_amount import PaymentAmount
 # from plaid.model.payment_amount_currency import PaymentAmountCurrency
-from plaid.model.products import Products
-from plaid.model.country_code import CountryCode
 # from plaid.model.recipient_bacs_nullable import RecipientBACSNullable
 # from plaid.model.payment_initiation_address import PaymentInitiationAddress
 # from plaid.model.payment_initiation_recipient_create_request import PaymentInitiationRecipientCreateRequest
@@ -23,7 +19,7 @@ from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUse
 # from plaid.model.asset_report_get_request import AssetReportGetRequest
 # from plaid.model.asset_report_pdf_get_request import AssetReportPDFGetRequest
 # from plaid.model.auth_get_request import AuthGetRequest
-# from plaid.model.transactions_sync_request import TransactionsSyncRequest
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
 # from plaid.model.identity_get_request import IdentityGetRequest
 # from plaid.model.investments_transactions_get_request_options import InvestmentsTransactionsGetRequestOptions
 # from plaid.model.investments_transactions_get_request import InvestmentsTransactionsGetRequest
@@ -41,69 +37,25 @@ from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUse
 # from plaid.model.ach_class import ACHClass
 # from plaid.model.transfer_create_idempotency_key import TransferCreateIdempotencyKey
 # from plaid.model.transfer_user_address_in_request import TransferUserAddressInRequest
-from plaid.api import plaid_api
+import pprint
+import time
 
-# Fill in your Plaid API keys - https://dashboard.plaid.com/account/keys
-PLAID_CLIENT_ID = os.getenv('PLAID_CLIENT_ID')
-PLAID_SECRET = os.getenv('PLAID_SECRET')
-# Use 'sandbox' to test with Plaid's Sandbox environment (username: user_good,
-# password: pass_good)
-# Use `development` to test with live users and credentials and `production`
-# to go live
-PLAID_ENV = os.getenv('PLAID_ENV', 'sandbox')
-# PLAID_PRODUCTS is a comma-separated list of products to use when initializing
-# Link. Note that this list must contain 'assets' in order for the app to be
-# able to create and retrieve asset reports.
-PLAID_PRODUCTS = os.getenv('PLAID_PRODUCTS', 'transactions').split(',')
-
-# PLAID_COUNTRY_CODES is a comma-separated list of countries for which users
-# will be able to select institutions from.
-PLAID_COUNTRY_CODES = os.getenv('PLAID_COUNTRY_CODES', 'US').split(',')
-
-plaid_host = plaid.Environment.Sandbox
-
-if PLAID_ENV == 'sandbox':
-    plaid_host = plaid.Environment.Sandbox
-if PLAID_ENV == 'development':
-    plaid_host = plaid.Environment.Development
-if PLAID_ENV == 'production':
-    plaid_host = plaid.Environment.Production
-
-plaid_config = plaid.Configuration(
-    host=plaid_host,
-    api_key={
-        'clientId': PLAID_CLIENT_ID,
-        'secret': PLAID_SECRET,
-        'plaidVersion': '2020-09-14'
-    }
-)
-
-plaid_api_client = plaid.ApiClient(plaid_config)
-plaid_client = plaid_api.PlaidApi(plaid_api_client)
-
-products = []
-for product in PLAID_PRODUCTS:
-    products.append(Products(product))
+# Local imports
+from model import *
+from plaid_setup import plaid_client, plaid_country_codes, plaid_products
+from sql import *
 
 app = Flask(__name__)
 CORS(app)
-
-mysql_config = {
-  'user': 'money-user',
-  'password': 'money-password',
-  'host': 'localhost',
-  'database': 'money',
-  'raise_on_warnings': True
-}
 
 # Create Plaid Link token
 @app.route('/create_link_token', methods=['POST'])
 def create_link_token():
     try:
         request = LinkTokenCreateRequest(
-            products=products,
+            products=plaid_products,
             client_name="Bettermint",
-            country_codes=list(map(lambda x: CountryCode(x), PLAID_COUNTRY_CODES)),
+            country_codes=plaid_country_codes,
             language='en',
             user=LinkTokenCreateRequestUser(
                 client_user_id=str(time.time())
@@ -136,6 +88,7 @@ def set_access_token():
     except plaid.ApiException as e:
         return json.loads(e.body)
 
+# Manage users.
 @app.route('/users/<user_id>', methods = ['GET', 'POST', 'DELETE'])
 def user(user_id):
   if request.method == 'GET':
@@ -144,7 +97,7 @@ def user(user_id):
   if request.method == 'POST':
     # modify/update the information for <user_id>
     # data = request.form # a multidict containing POST data
-    if not upsert_user(user_id, request.json['identifier'], request.json['display_name']):
+    if not save_user(user_id, request.json['identifier'], request.json['display_name']):
       abort(500) # Something went wrong
     return '{{}}'
   if request.method == 'DELETE':
@@ -154,6 +107,7 @@ def user(user_id):
     # POST Error 405 Method Not Allowed
     abort(405)
 
+# Manage accounts.
 @app.route('/accounts', methods = ['GET', 'POST'])
 def accounts():
   user_id = request.args.get('user_id')
@@ -166,95 +120,81 @@ def accounts():
     # Determine if it is a single account or list of accounts
     account = request.json.get('account')
     if account:
-      save_account(user_id, account.get('name'), account.get('number'))
+      save_account(account.get('id'), user_id, account.get('name'), account.get('number'))
       return '{{}}'
     accounts = request.json.get('accounts')
     if accounts:
       for account in accounts:
         # TODO: add all accounts in a single SQL query
-        save_account(user_id, account.get('name'), account.get('number'))
+        save_account(account.get('id'), user_id, account.get('name'), account.get('number'))
       return '{{}}'
     return '{{}}'
   else:
     # POST Error 405 Method Not Allowed
     abort(405)
 
-### MYSQL
+# Get transactions that we have already synced from Plaid (client refresh).
+# TODO: also implement individual transaction gets by id.
+@app.route('/transactions', methods = ['GET'])
+def transactions():
+  # TODO: load all transactions from db for this user.
+  return '{{}}'
 
-def upsert_user(user_id, identifier, display_name) -> bool:
-  sql_statement = """
-    INSERT INTO users (id, identifier, display_name)
-    VALUES (%s, %s, %s)
-    ON DUPLICATE KEY UPDATE identifier = %s, display_name = %s
-  """
-  sql_data = (user_id, identifier, display_name, identifier, display_name)
-  return run_sql(sql_statement, sql_data)
+# Sync transactions from Plaid (server refresh).
+@app.route('/transactions/sync', methods = ['POST'])
+def transactions_sync():
+  user_id = request.args.get('user_id')
+  # 1. fetch most recent cursor from the db
+  items = get_plaid_items(user_id)
+  for item in items:
+     sync_transactions(user_id, item['id'], item['access_token'], item['transaction_cursor'])
+  return '{{}}'
 
-def save_access_token(user_id, access_token, item_id) -> bool:
-  sql_statement = """
-    INSERT INTO plaid (user_id, access_token, item_id)
-    VALUES (%s, %s, %s)
-    ON DUPLICATE KEY UPDATE access_token = %s, item_id = %s
-  """
-  sql_data = (user_id, access_token, item_id, access_token, item_id)
-  return run_sql(sql_statement, sql_data)
-
-def save_account(user_id, account_name, account_number) -> bool:
-  sql_statement = """
-    INSERT INTO accounts (user_id, name, number)
-    VALUES (%s, %s, %s)
-    ON DUPLICATE KEY UPDATE name = %s, number = %s
-  """
-  sql_data = (user_id, account_name, account_number, account_name, account_number)
-  return run_sql(sql_statement, sql_data)
-
-def get_accounts(user_id) -> list:
-  sql_statement = """
-    SELECT * from accounts
-    WHERE user_id = %s
-  """
-  sql_data = (user_id, )
-  return run_sql_fetch(sql_statement, sql_data)
-
-def run_sql(statement, data) -> bool:
+def sync_transactions(user_id: str, item_id: str, access_token: str, cursor: str):
+  print("SYNC TRANSACTIONS FOR {}, {}, {}".format(user_id, access_token, cursor))
+  added_count, removed_count, modified_count = 0, 0, 0
   try:
-    connection = mysql.connector.connect(**mysql_config)
-    cursor = connection.cursor()
-    cursor.execute(statement, data)
-    cursor.fetchall()
-    connection.commit()
-    cursor.close()
-    connection.close()
-    return True
-  except mysql.connector.Error as err:
-    if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
-      print("Access to DB denied")
-    elif err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
-      print("Bad DB")
-    else:
-      print(err)
-  return False
+    # 2. fetch all transactions since last cursor
+    added, modified, removed, cursor = fetch_new_sync_data(access_token, cursor if cursor else "")
 
-def run_sql_fetch(statement, data) -> list:
-  try:
-    connection = mysql.connector.connect(**mysql_config)
-    cursor = connection.cursor()
-    cursor.execute(statement, data)
+    # 3. add new transactions to our database
+    for transaction in added:
+      simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
+      add_transaction(simple_transaction)
+      added_count += 1
 
-    rows = cursor.fetchall()
-    row_headers = [x[0] for x in cursor.description]
-    json_data = list(map(lambda x: dict(zip(row_headers, x)), rows))
+    # 4. update modified transactions
+    for transaction in modified:
+      simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
+      modify_transaction(simple_transaction)
+      modified_count += 1
 
-    connection.commit()
-    cursor.close()
-    connection.close()
+    # 5. process removed transactions
+    for transaction in removed:
+      delete_transaction(transaction["transaction_id"])
+      removed_count += 1
 
-    return json_data
-  except mysql.connector.Error as err:
-    if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
-      print("Access to DB denied")
-    elif err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
-      print("Bad DB")
-    else:
-      print(err)
-  return []
+    # 6. save most recent cursor
+    save_transaction_cursor(item_id, cursor)
+
+    print("DONE SYNC: {}, {}, {}".format(added_count, removed_count, modified_count))
+
+  except plaid.ApiException as e:
+    print("SYNC ERROR {}".format(e.body))
+    # return json.loads(e.body)
+
+def fetch_new_sync_data(access_token: str, initial_cursor: str) -> tuple:
+  keep_going = False
+  added, modified, removed, cursor = [], [], [], initial_cursor
+  while True:
+    request = TransactionsSyncRequest(access_token)
+    request.cursor = cursor
+    response = plaid_client.transactions_sync(request)
+    print("Added: {}, modified: {}, removed: {}, cursor: {}".format(len(response.added), len(response.modified), len(response.removed), response.next_cursor))
+    added += response.added
+    modified += response.modified
+    removed += response.removed
+    cursor = response.next_cursor
+    keep_going = response.has_more
+    if not keep_going: break
+  return (added, modified, removed, cursor)
