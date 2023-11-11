@@ -74,6 +74,28 @@ def get_transaction(id: str) -> Optional[SimpleTransaction]:
   if len(rows) != 1: return None
   return SimpleTransaction.fromSQLTransaction(rows[0])
 
+def get_transactions_for_user(user_id: str) -> list[SimpleTransaction]:
+  sql_statement = """
+    SELECT t.id, t.account_id, t.date, t.name, t.amount
+    FROM transactions AS t
+    INNER JOIN accounts AS a
+    ON t.account_id = a.id
+    WHERE a.user_id = %s
+  """
+  sql_data = (user_id, )
+  rows = db_read(sql_statement, sql_data)
+  return list(map(lambda x: SimpleTransaction.fromSQLTransaction(x), rows))
+
+def get_transactions_for_account(account_id: str) -> list[SimpleTransaction]:
+  sql_statement = """
+    SELECT id, account_id, date, name, amount
+    FROM transactions
+    WHERE account_id = %s
+  """
+  sql_data = (account_id, )
+  rows = db_read(sql_statement, sql_data)
+  return list(map(lambda x: SimpleTransaction.fromSQLTransaction(x), rows))
+
 def add_transaction(transaction: SimpleTransaction):
   # print("ADDING {}".format(transaction.id))
   # pprint(vars(transaction))
@@ -101,7 +123,7 @@ def modify_transaction(transaction: SimpleTransaction):
   sql_data = (transaction.account_id, transaction.date, transaction.name or "", transaction.amount, transaction.id)
   return db_write(sql_statement, sql_data)
 
-def delete_transaction(transaction_id: str):
+def delete_transaction(transaction_id: str) -> bool:
   print("REMOVING {}".format(transaction_id))
   # Consider marking removed instead of deleting, but you'd need to rename the ID
   # (e.g. transactionId + "-REMOVED-" + random UUID) to avoid future collisions

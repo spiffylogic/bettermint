@@ -1,29 +1,20 @@
 import datetime
+from dataclasses import dataclass
 
 # A simple object to pass to our database functions that represents the data
 # our application cares about from the Plaid transaction endpoint.
+@dataclass
 class SimpleTransaction:
-  def __init__(self, id: str,
-               user_id: str,
-               account_id: str,
-               category: str,
-               date: datetime.date,
-               authorized_date: datetime.date,
-               name: str,
-               amount: float,
-               currency_code: str,
-               pending_transaction_id: str):
-    # Initialize the SimpleTransaction object with the provided data
-    self.id = id
-    self.user_id = user_id
-    self.account_id = account_id
-    self.category = category
-    self.date = date
-    self.authorized_date = authorized_date
-    self.name = name
-    self.amount = amount
-    self.currency_code = currency_code
-    self.pending_transaction_id = pending_transaction_id
+  id: str
+  user_id: str
+  account_id: str
+  category: str
+  date: datetime.date
+  authorized_date: datetime.date
+  name: str
+  amount: float
+  currency_code: str
+  pending_transaction_id: str
 
   @staticmethod
   def fromPlaidTransaction(txnObj, userId):

@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import abort, Flask, jsonify, request
 from flask_cors import CORS
 import json
@@ -38,7 +39,6 @@ from plaid.model.transactions_sync_request import TransactionsSyncRequest
 # from plaid.model.transfer_create_idempotency_key import TransferCreateIdempotencyKey
 # from plaid.model.transfer_user_address_in_request import TransferUserAddressInRequest
 import pprint
-import time
 
 # Local imports
 from model import *
@@ -53,12 +53,12 @@ CORS(app)
 def create_link_token():
     try:
         request = LinkTokenCreateRequest(
-            products=plaid_products,
-            client_name="Bettermint",
-            country_codes=plaid_country_codes,
-            language='en',
-            user=LinkTokenCreateRequestUser(
-                client_user_id=str(time.time())
+            products = plaid_products,
+            client_name = "Bettermint",
+            country_codes = plaid_country_codes,
+            language = 'en',
+            user = LinkTokenCreateRequestUser(
+                client_user_id = str(datetime.now().timestamp())
             )
         )
         response = plaid_client.link_token_create(request)
@@ -91,110 +91,142 @@ def set_access_token():
 # Manage users.
 @app.route('/users/<user_id>', methods = ['GET', 'POST', 'DELETE'])
 def user(user_id):
-  if request.method == 'GET':
-    # TODO: return the information for <user_id>
-    return '{{}}'
-  if request.method == 'POST':
-    # modify/update the information for <user_id>
-    # data = request.form # a multidict containing POST data
-    if not save_user(user_id, request.json['identifier'], request.json['display_name']):
-      abort(500) # Something went wrong
-    return '{{}}'
-  if request.method == 'DELETE':
-    # TODO: delete user with ID <user_id>
-    return '{{}}'
-  else:
-    # POST Error 405 Method Not Allowed
-    abort(405)
+    if request.method == 'GET':
+        # TODO: return the information for <user_id>
+        return '{{}}'
+    if request.method == 'POST':
+        # modify/update the information for <user_id>
+        # data = request.form # a multidict containing POST data
+        if not save_user(user_id, request.json['identifier'], request.json['display_name']):
+            abort(500) # Something went wrong
+        return '{{}}'
+    if request.method == 'DELETE':
+        # TODO: delete user with ID <user_id>
+        return '{{}}'
+    else:
+        # POST Error 405 Method Not Allowed
+        abort(405)
 
 # Manage accounts.
 @app.route('/accounts', methods = ['GET', 'POST'])
 def accounts():
-  user_id = request.args.get('user_id')
+    user_id = request.args.get('user_id')
 
-  if request.method == 'GET':
-    # Return the list of accounts for <user_id>
-    return jsonify(get_accounts(user_id))
+    if request.method == 'GET':
+        # Return the list of accounts for <user_id>
+        return get_accounts(user_id) # jsonify
 
-  if request.method == 'POST':
-    # Determine if it is a single account or list of accounts
-    account = request.json.get('account')
-    if account:
-      save_account(account.get('id'), user_id, account.get('name'), account.get('number'))
-      return '{{}}'
-    accounts = request.json.get('accounts')
-    if accounts:
-      for account in accounts:
-        # TODO: add all accounts in a single SQL query
-        save_account(account.get('id'), user_id, account.get('name'), account.get('number'))
-      return '{{}}'
-    return '{{}}'
-  else:
-    # POST Error 405 Method Not Allowed
-    abort(405)
+    if request.method == 'POST':
+        # Determine if it is a single account or list of accounts
+        account = request.json.get('account')
+        if account:
+            save_account(account.get('id'), user_id, account.get('name'), account.get('number'))
+            return '{{}}'
+        accounts = request.json.get('accounts')
+        if accounts:
+            for account in accounts:
+                # TODO: add all accounts in a single SQL query
+                save_account(account.get('id'), user_id, account.get('name'), account.get('number'))
+            return '{{}}'
+        return '{{}}'
+    else:
+        # POST Error 405 Method Not Allowed
+        abort(405)
 
 # Get transactions that we have already synced from Plaid (client refresh).
 # TODO: also implement individual transaction gets by id.
 @app.route('/transactions', methods = ['GET'])
 def transactions():
-  # TODO: load all transactions from db for this user.
-  return '{{}}'
+    # TODO: load all transactions from db for this user.
+    user_id = request.args.get('user_id')
+    transactions = get_transactions_for_user(user_id)
+    return transactions
+
+# ABOVE IS CORRECTLY USING 4 SPACES
+
+# Manage transactions.
+@app.route('/transactions/<transaction_id>', methods = ['GET', 'POST', 'DELETE'])
+def transaction(transaction_id):
+    if request.method == 'GET':
+        return jsonify(get_transaction(transaction_id))
+    if request.method == 'POST':
+        d = datetime.strptime(request.json['date'], '%Y-%m-%d')
+        simple_transaction = SimpleTransaction(
+            transaction_id,
+            request.args.get('user_id'),
+            request.json['account_id'],
+            None, # category
+            d, # date
+            None, # authorized_date
+            request.json['name'],
+            request.json['amount'],
+            None,
+            None
+        )
+        if not modify_transaction(simple_transaction): abort(500)
+        return '{{}}'
+    if request.method == 'DELETE':
+        if not delete_transaction(transaction_id): abort(500)
+        return '{{}}'
+    else:
+        # POST Error 405 Method Not Allowed
+        abort(405)
 
 # Sync transactions from Plaid (server refresh).
 @app.route('/transactions/sync', methods = ['POST'])
 def transactions_sync():
-  user_id = request.args.get('user_id')
-  # 1. fetch most recent cursor from the db
-  items = get_plaid_items(user_id)
-  for item in items:
-     sync_transactions(user_id, item['id'], item['access_token'], item['transaction_cursor'])
-  return '{{}}'
+    user_id = request.args.get('user_id')
+    # 1. fetch most recent cursor from the db
+    items = get_plaid_items(user_id)
+    for item in items:
+        sync_transactions(user_id, item['id'], item['access_token'], item['transaction_cursor'])
+    return '{{}}'
 
 def sync_transactions(user_id: str, item_id: str, access_token: str, cursor: str):
-  print("SYNC TRANSACTIONS FOR {}, {}, {}".format(user_id, access_token, cursor))
-  added_count, removed_count, modified_count = 0, 0, 0
-  try:
-    # 2. fetch all transactions since last cursor
-    added, modified, removed, cursor = fetch_new_sync_data(access_token, cursor if cursor else "")
+    print("SYNC TRANSACTIONS FOR {}, {}, {}".format(user_id, access_token, cursor))
+    added_count, removed_count, modified_count = 0, 0, 0
+    try:
+        # 2. fetch all transactions since last cursor
+        added, modified, removed, cursor = fetch_new_sync_data(access_token, cursor if cursor else "")
 
-    # 3. add new transactions to our database
-    for transaction in added:
-      simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
-      add_transaction(simple_transaction)
-      added_count += 1
+        # 3. add new transactions to our database
+        for transaction in added:
+            simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
+            add_transaction(simple_transaction)
+            added_count += 1
 
-    # 4. update modified transactions
-    for transaction in modified:
-      simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
-      modify_transaction(simple_transaction)
-      modified_count += 1
+        # 4. update modified transactions
+        for transaction in modified:
+            simple_transaction = SimpleTransaction.fromPlaidTransaction(transaction, user_id)
+            modify_transaction(simple_transaction)
+            modified_count += 1
 
-    # 5. process removed transactions
-    for transaction in removed:
-      delete_transaction(transaction["transaction_id"])
-      removed_count += 1
+        # 5. process removed transactions
+        for transaction in removed:
+            delete_transaction(transaction["transaction_id"])
+            removed_count += 1
 
-    # 6. save most recent cursor
-    save_transaction_cursor(item_id, cursor)
+        # 6. save most recent cursor
+        save_transaction_cursor(item_id, cursor)
 
-    print("DONE SYNC: {}, {}, {}".format(added_count, removed_count, modified_count))
+        print("DONE SYNC: {}, {}, {}".format(added_count, removed_count, modified_count))
 
-  except plaid.ApiException as e:
-    print("SYNC ERROR {}".format(e.body))
-    # return json.loads(e.body)
+    except plaid.ApiException as e:
+        print("SYNC ERROR {}".format(e.body))
+        # return json.loads(e.body)
 
 def fetch_new_sync_data(access_token: str, initial_cursor: str) -> tuple:
-  keep_going = False
-  added, modified, removed, cursor = [], [], [], initial_cursor
-  while True:
-    request = TransactionsSyncRequest(access_token)
-    request.cursor = cursor
-    response = plaid_client.transactions_sync(request)
-    print("Added: {}, modified: {}, removed: {}, cursor: {}".format(len(response.added), len(response.modified), len(response.removed), response.next_cursor))
-    added += response.added
-    modified += response.modified
-    removed += response.removed
-    cursor = response.next_cursor
-    keep_going = response.has_more
-    if not keep_going: break
-  return (added, modified, removed, cursor)
+    keep_going = False
+    added, modified, removed, cursor = [], [], [], initial_cursor
+    while True:
+        request = TransactionsSyncRequest(access_token)
+        request.cursor = cursor
+        response = plaid_client.transactions_sync(request)
+        print("Added: {}, modified: {}, removed: {}, cursor: {}".format(len(response.added), len(response.modified), len(response.removed), response.next_cursor))
+        added += response.added
+        modified += response.modified
+        removed += response.removed
+        cursor = response.next_cursor
+        keep_going = response.has_more
+        if not keep_going: break
+    return (added, modified, removed, cursor)
