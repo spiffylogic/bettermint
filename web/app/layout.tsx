@@ -3,7 +3,7 @@
 import './globals.css'
 // import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import Navbar from './navbar/navbar'
+import Navbar from './components/navbar'
 import AppContext from "./contexts/userContext";
 import { useState } from 'react'
 import { UserContext } from './types/globalContext';

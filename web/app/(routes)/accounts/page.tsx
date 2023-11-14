@@ -1,8 +1,8 @@
 'use client'
 
 import { useContext, useEffect, useState } from "react";
-import UserContext from '../contexts/userContext';
-import {Account} from '../types/account';
+import UserContext from '../../contexts/userContext';
+import {Account} from '../../types/account';
 
 export default function Accounts() {
     const [accounts, setAccounts] = useState<Account[]>([]);
