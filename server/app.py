@@ -58,7 +58,7 @@ def create_link_token():
             country_codes = plaid_country_codes,
             language = 'en',
             user = LinkTokenCreateRequestUser(
-                client_user_id = str(datetime.now().timestamp())
+                client_user_id = str(datetime.datetime.now().timestamp())
             )
         )
         response = plaid_client.link_token_create(request)
