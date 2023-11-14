@@ -2,20 +2,23 @@
 
 import { useContext, useEffect, useState } from "react";
 import UserContext from '../../contexts/userContext';
-import {Account} from '../../types/account';
+import { Account } from '../../types/account';
+import * as server from  '../../services/bettermint';
 
 export default function Accounts() {
     const [accounts, setAccounts] = useState<Account[]>([]);
     const { user } = useContext(UserContext);
 
-    const getAccounts = async () => {
-        const response = await fetch(`http://localhost:5000/accounts?user_id=${user?.uid}`, { method: 'GET' });
-        const data = await response.json();
-        setAccounts(data);
-    };
-
     useEffect(() => {
-        getAccounts();
+        if (user?.uid) {
+            // self-invoking async function, since useEffect is not async
+            (async() => {
+                const data = await server.getAccounts(user?.uid);
+                setAccounts(data);
+            })()
+        } else {
+            setAccounts([]);
+        }
     }, [user]);
 
     return (
