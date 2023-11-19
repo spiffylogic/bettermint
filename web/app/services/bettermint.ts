@@ -41,3 +41,15 @@ export const getAccounts = async (userId: string) => {
     const data = await response.json();
     return data;
 };
+
+export const getTransactions = async (userId: string) => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions?user_id=${userId}`, { method: 'GET' });
+    const data = await response.json();
+    return data;
+};
+
+export const syncTransactions = async (userId: string) => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions/sync?user_id=${userId}`, { method: 'POST' });
+    const data = await response.json();
+    return data;
+};
