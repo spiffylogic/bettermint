@@ -35,7 +35,8 @@ class TransactionTests(unittest.TestCase):
     @mock.patch('app.fetch_new_sync_data', side_effect = modified_fetch_new_sync_data)
     def test_sync_modified(self, mock_fetch):
         existing_tx = sql.get_transaction(TEST_TRANSACTION_ID)
-        app.sync_transactions(TEST_USER_ID, TEST_ITEM_ID, None, None)
+        summary = app.sync_transactions(TEST_USER_ID, TEST_ITEM_ID, None, None)
+        self.assertEqual(summary, (0, 0, 1))
         modified_tx = sql.get_transaction(TEST_TRANSACTION_ID)
         self.assertEqual(existing_tx.amount, SAMPLE_TX['amount'])
         self.assertEqual(modified_tx.amount, MODIFIED_TX['amount'])
@@ -43,7 +44,8 @@ class TransactionTests(unittest.TestCase):
     @mock.patch('app.fetch_new_sync_data', side_effect = removed_fetch_new_sync_data)
     def test_sync_deleted(self, mock_fetch):
         existing_tx = sql.get_transaction(TEST_TRANSACTION_ID)
-        app.sync_transactions(TEST_USER_ID, TEST_ITEM_ID, None, None)
+        summary = app.sync_transactions(TEST_USER_ID, TEST_ITEM_ID, None, None)
+        self.assertEqual(summary, (0, 1, 0))
         deleted_tx = sql.get_transaction(TEST_TRANSACTION_ID)
         self.assertIsNone(deleted_tx)
 

@@ -29,6 +29,9 @@ export default function Transactions() {
         if (user?.uid) {
             const data = await server.syncTransactions(user?.uid);
             console.log(data);
+            if (data && data.length == 3 && (data[0] > 0 || data[1] > 0 || data[2] > 0)) {
+                clientRefresh();
+            }
         }
     }
 

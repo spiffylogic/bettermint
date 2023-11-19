@@ -178,11 +178,13 @@ def transactions_sync():
     user_id = request.args.get('user_id')
     # 1. fetch most recent cursor from the db
     items = get_plaid_items(user_id)
+    summary = [0, 0, 0]
     for item in items:
-        sync_transactions(user_id, item['id'], item['access_token'], item['transaction_cursor'])
-    return '{{}}'
+        sync_summary = sync_transactions(user_id, item['id'], item['access_token'], item['transaction_cursor'])
+        summary = [sum(x) for x in zip(summary, sync_summary)]
+    return summary
 
-def sync_transactions(user_id: str, item_id: str, access_token: str, cursor: str):
+def sync_transactions(user_id: str, item_id: str, access_token: str, cursor: str) -> tuple:
     print("SYNC TRANSACTIONS FOR {}, {}, {}".format(user_id, access_token, cursor))
     added_count, removed_count, modified_count = 0, 0, 0
     try:
@@ -210,6 +212,7 @@ def sync_transactions(user_id: str, item_id: str, access_token: str, cursor: str
         save_transaction_cursor(item_id, cursor)
 
         print("DONE SYNC: {}, {}, {}".format(added_count, removed_count, modified_count))
+        return (added_count, removed_count, modified_count)
 
     except plaid.ApiException as e:
         print("SYNC ERROR {}".format(e.body))
