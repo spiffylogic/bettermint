@@ -1,9 +1,9 @@
 'use client'
 
 import { useContext, useEffect, useState } from "react";
-import UserContext from '../../lib/userContext';
-import { Account } from '../../lib/model';
-import * as server from  '../../services/bettermint';
+import UserContext from '@/app/lib/userContext';
+import { Account } from '@/app/lib/model';
+import * as server from  '@/app/services/bettermint';
 
 export default function Accounts() {
     const [accounts, setAccounts] = useState<Account[]>([]);

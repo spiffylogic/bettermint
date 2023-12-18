@@ -1,8 +1,8 @@
 'use client';
 
-import UserContext from '../lib/userContext';
-import { onAuthStateChangedHelper } from '../lib/firebase';
-import SignIn from './sign-in';
+import UserContext from '@/app/lib/userContext';
+import { onAuthStateChangedHelper } from '@/app/lib/firebase';
+import SignIn from '@/app/ui/sign-in';
 
 import { User } from 'firebase/auth';
 import Image from 'next/image';

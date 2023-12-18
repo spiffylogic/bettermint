@@ -1,13 +1,13 @@
 'use client'
 
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import UserContext from '../../lib/userContext'
+import UserContext from '@/app/lib/userContext'
 import {
     usePlaidLink,
     // PlaidLinkOptions,
     PlaidLinkOnSuccess,
   } from 'react-plaid-link';
-import * as server from  '../../services/bettermint';
+import * as server from  '@/app/services/bettermint';
 
 export default function Link() {
     const [token, setToken] = useState<string | null>(null);

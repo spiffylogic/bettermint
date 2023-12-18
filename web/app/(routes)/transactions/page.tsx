@@ -1,9 +1,9 @@
 'use client'
 
 import { useContext, useEffect, useState } from "react";
-import UserContext from '../../lib/userContext';
-import { Transaction } from '../../lib/model';
-import * as server from  '../../services/bettermint';
+import UserContext from '@/app/lib/userContext';
+import { Transaction } from '@/app/lib/model';
+import * as server from  '@/app/services/bettermint';
 
 export default function Transactions() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
