@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import UserContext from '../../contexts/userContext'
+import UserContext from '../../lib/userContext'
 import {
     usePlaidLink,
     // PlaidLinkOptions,

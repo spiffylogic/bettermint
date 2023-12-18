@@ -1,8 +1,8 @@
 'use client'
 
 import { useContext, useEffect, useState } from "react";
-import UserContext from '../../contexts/userContext';
-import { Account } from '../../types/model';
+import UserContext from '../../lib/userContext';
+import { Account } from '../../lib/model';
 import * as server from  '../../services/bettermint';
 
 export default function Accounts() {

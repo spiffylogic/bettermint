@@ -1,6 +1,6 @@
 'use client';
 
-import { signInWithGoogle, signOut } from '../firebase/firebase';
+import { signInWithGoogle, signOut } from '../lib/firebase';
 
 import { User } from 'firebase/auth';
 import { Fragment } from 'react';

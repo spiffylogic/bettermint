@@ -1,7 +1,7 @@
 'use client';
 
-import UserContext from '../contexts/userContext';
-import { onAuthStateChangedHelper } from '../firebase/firebase';
+import UserContext from '../lib/userContext';
+import { onAuthStateChangedHelper } from '../lib/firebase';
 import SignIn from './sign-in';
 
 import { User } from 'firebase/auth';
