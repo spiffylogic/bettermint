@@ -134,17 +134,16 @@ def accounts():
         abort(405)
 
 # Get transactions that we have already synced from Plaid (client refresh).
-# TODO: also implement individual transaction gets by id.
+# TODO: a count of ALL transactions would be useful for client.
 @app.route('/transactions', methods = ['GET'])
 def transactions():
-    # TODO: load all transactions from db for this user.
+    page = int(request.args.get('page') or 0)
+    page_size = int(request.args.get('page_size') or 100)
     user_id = request.args.get('user_id')
-    transactions = get_transactions_for_user(user_id)
+    transactions = get_transactions_for_user(user_id, page * page_size, page_size)
     return transactions
 
-# ABOVE IS CORRECTLY USING 4 SPACES
-
-# Manage transactions.
+# Manage individual transactions.
 @app.route('/transactions/<transaction_id>', methods = ['GET', 'POST', 'DELETE'])
 def transaction(transaction_id):
     if request.method == 'GET':

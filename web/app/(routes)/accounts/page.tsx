@@ -24,11 +24,11 @@ export default function Accounts() {
     return (
         <div>
             <h1>Accounts Page</h1>
-            <p>USERID: { user?.uid }</p>
+            <p>USERID: {user?.uid}</p>
             <center>
                 { accounts.map((account: Account, index: number) => {
                     return (
-                        <div key={ index }>
+                        <div key={index}>
                             <p>{ account.number  + " " + account.name }</p>
                         </div>
                     );

@@ -74,15 +74,18 @@ def get_transaction(id: str) -> Optional[SimpleTransaction]:
     if len(rows) != 1: return None
     return SimpleTransaction.fromSQLTransaction(rows[0])
 
-def get_transactions_for_user(user_id: str) -> list[SimpleTransaction]:
+# The offset specifies the offset of the first row to return. The offset of the first row is 0, not 1.
+# The row_count specifies the maximum number of rows to return.
+def get_transactions_for_user(user_id: str, offset: int = 0, row_count: int = 10) -> list[SimpleTransaction]:
     sql_statement = """
         SELECT t.id, t.account_id, t.date, t.name, t.amount
         FROM transactions AS t
         INNER JOIN accounts AS a
         ON t.account_id = a.id
         WHERE a.user_id = %s
+        LIMIT %s, %s
     """
-    sql_data = (user_id, )
+    sql_data = (user_id, offset, row_count)
     rows = db_read(sql_statement, sql_data)
     return list(map(lambda x: SimpleTransaction.fromSQLTransaction(x), rows))
 
