@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const [context, setContext] = useState<UserContext>({} as UserContext);
-  const [user,setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   return (
     <AppContext.Provider value={{...context, setContext,user,setUser}}>
       <html lang="en">
