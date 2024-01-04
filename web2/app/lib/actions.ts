@@ -21,9 +21,6 @@ export type State = {
 // This schema will validate the formData before saving it to a database.
 const FormSchema = z.object({
     id: z.string(),
-    customerId: z.string({
-        invalid_type_error: 'Please select a customer.',
-    }),
     amount: z.coerce
         .number()
         .gt(0, { message: 'Please enter a number greater than $0.' }),
@@ -44,7 +41,6 @@ export async function createInvoice(previousState: State, formData: FormData) {
     // For example: const rawFormData = Object.fromEntries(formData.entries())
     // Validate fields with zod
     const validatedFields = CreateInvoice.safeParse({
-        customerId: formData.get('customerId'),
         amount: formData.get('amount'),
         status: formData.get('status'),
     });
@@ -57,7 +53,7 @@ export async function createInvoice(previousState: State, formData: FormData) {
         };
     }
 
-    const { customerId, amount, status } = validatedFields.data;
+    const { amount, status } = validatedFields.data;
     // It's usually good practice to store monetary values in cents in your database
     // to eliminate JavaScript floating-point errors and ensure greater accuracy.
     const amountInCents = amount * 100;
@@ -67,7 +63,7 @@ export async function createInvoice(previousState: State, formData: FormData) {
     try {
         await sql`
             INSERT INTO invoices (customer_id, amount, status, date)
-            VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+            VALUES (12345, ${amountInCents}, ${status}, ${date})
         `;
     } catch(error) {
         return { message: "Database error: failed to create invoice." };
@@ -94,13 +90,13 @@ export async function updateInvoice(id: string, previousState: State, formData: 
             message: 'Missing Fields. Failed to Update Invoice.',
         };
     }
-    const { customerId, amount, status } = validatedFields.data;
+    const { amount, status } = validatedFields.data;
     const amountInCents = amount * 100;
 
     try {
         await sql`
             UPDATE invoices
-            SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+            SET amount = ${amountInCents}, status = ${status}
             WHERE id = ${id}
         `;
     } catch(error) {
