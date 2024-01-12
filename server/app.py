@@ -52,7 +52,7 @@ CORS(app)
 @app.route('/create_link_token', methods=['POST'])
 def create_link_token():
     try:
-        request = LinkTokenCreateRequest(
+        create_request = LinkTokenCreateRequest(
             products = plaid_products,
             client_name = "Bettermint",
             country_codes = plaid_country_codes,
@@ -61,7 +61,7 @@ def create_link_token():
                 client_user_id = str(datetime.datetime.now().timestamp())
             )
         )
-        response = plaid_client.link_token_create(request)
+        response = plaid_client.link_token_create(create_request)
         return jsonify(response.to_dict())
     except plaid.ApiException as e:
         return json.loads(e.body)
@@ -180,10 +180,11 @@ def transactions_sync():
     summary = [0, 0, 0]
     for item in items:
         sync_summary = sync_transactions(user_id, item['id'], item['access_token'], item['transaction_cursor'])
-        summary = [sum(x) for x in zip(summary, sync_summary)]
+        if sync_summary:
+            summary = [sum(x) for x in zip(summary, sync_summary)]
     return summary
 
-def sync_transactions(user_id: str, item_id: str, access_token: str, cursor: str) -> tuple:
+def sync_transactions(user_id: str, item_id: str, access_token: str, cursor: str) -> Optional[tuple]:
     print("SYNC TRANSACTIONS FOR {}, {}, {}".format(user_id, access_token, cursor))
     added_count, removed_count, modified_count = 0, 0, 0
     try:
@@ -215,6 +216,7 @@ def sync_transactions(user_id: str, item_id: str, access_token: str, cursor: str
 
     except plaid.ApiException as e:
         print("SYNC ERROR {}".format(e.body))
+        return None
         # return json.loads(e.body)
 
 def fetch_new_sync_data(access_token: str, initial_cursor: str) -> tuple:
