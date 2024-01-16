@@ -1,13 +1,12 @@
 'use client'
 
-import { useContext, useEffect } from 'react';
-import { User } from 'firebase/auth';
-
 import Logo from '@/app/ui/logo';
-import SignIn from '@/app/ui/sign-in';
 import UserContext from '@/app/lib/userContext';
-import { onAuthStateChangedHelper } from '@/app/lib/firebase';
+import { onAuthStateChangedHelper, signInWithGoogle } from '@/app/lib/firebase';
+
+import { User } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { useContext, useEffect } from 'react';
 
 export default function LoginPage() {
   const { user, setUser } = useContext(UserContext);
@@ -44,7 +43,9 @@ export default function LoginPage() {
           </div>
         </div>
         {/* <LoginForm /> */}
-        <SignIn user={user} />
+        <button onClick={signInWithGoogle}>
+          Sign In
+        </button>
       </div>
     </main>
   );

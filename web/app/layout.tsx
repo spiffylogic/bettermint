@@ -3,7 +3,6 @@
 import '@/app/ui/globals.css'
 // import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import Navbar from '@/app/ui/navbar'
 import AppContext from "@/app/lib/userContext";
 import { useState } from 'react'
 import { UserContext } from '@/app/lib/globalContext';
@@ -27,7 +26,6 @@ export default function RootLayout({
     <AppContext.Provider value={{...context, setContext,user,setUser}}>
       <html lang="en">
         <body className={inter.className}>
-          {/* <Navbar /> */}
           {children}
         </body>
       </html>
