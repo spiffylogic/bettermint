@@ -27,7 +27,7 @@ export default function RootLayout({
     <AppContext.Provider value={{...context, setContext,user,setUser}}>
       <html lang="en">
         <body className={inter.className}>
-          <Navbar />
+          {/* <Navbar /> */}
           {children}
         </body>
       </html>
