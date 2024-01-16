@@ -8,7 +8,7 @@ import { Fragment } from 'react';
 interface SignInProps {
     user: User | null
 }
-// Note: this is called descructing assignment (instead of using props: SignInProps)
+// Note: this is called descructing assignment (instead of "props: SignInProps")
 export default function SignIn({ user }: SignInProps) {
     return (
         <Fragment>

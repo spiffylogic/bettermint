@@ -1,5 +1,5 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
+import { getApps, initializeApp } from "firebase/app";
 import {
     getAuth,
     signInWithPopup,
@@ -21,6 +21,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+if (getApps().length > 0) {
+    console.log("REDUNDANT FIREBASE APP INITIALIZATION");
+}
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
