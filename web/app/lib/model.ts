@@ -4,6 +4,7 @@ export interface Account {
 }
 
 export interface Transaction {
+    id: string;
     category: string;
     date: Date;
     name: string;
