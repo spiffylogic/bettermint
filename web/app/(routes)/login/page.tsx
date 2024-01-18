@@ -44,7 +44,7 @@ export default function LoginPage() {
         </div>
         {/* <LoginForm /> */}
         <button onClick={signInWithGoogle}>
-          Sign In
+          Sign In With Google
         </button>
       </div>
     </main>
