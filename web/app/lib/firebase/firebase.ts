@@ -1,4 +1,3 @@
-
 // This code was adapted from https://github.com/firebase/friendlyeats-web.git
 // which comes from the code lab https://firebase.google.com/codelabs/firebase-nextjs
 
