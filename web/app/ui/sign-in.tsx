@@ -1,6 +1,7 @@
 'use client';
 
-import { signOut } from '@/app/lib/firebase';
+import { signOut } from '@/app/lib/firebase/auth';
+import useUserSession from '@/app/lib/firebase/useUserSession';
 
 import { User } from 'firebase/auth';
 import { ArrowRightIcon, PowerIcon } from '@heroicons/react/24/outline';
@@ -9,12 +10,12 @@ import { useRouter } from 'next/navigation';
 import { Fragment } from 'react';
 
 interface SignInProps {
-    user: User | null
+    initialUser: User | null
 }
 
-// Note: this is called descructing assignment (instead of "props: SignInProps")
-export default function SignIn({ user }: SignInProps) {
+export default function SignIn({ initialUser }: SignInProps) {
     const router = useRouter();
+    const user = useUserSession(initialUser);
 
     return (
         <Fragment>

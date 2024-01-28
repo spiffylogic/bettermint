@@ -1,10 +1,9 @@
 'use client';
 
-import { useContext } from "react";
-import UserContext from '@/app/lib/userContext';
+import getUser from "@/app/lib/firebase/getUser";
 
 export default function Home() {
-    const { user } = useContext(UserContext);
+    const user = getUser();
 
     return (
         <main className="flex flex-col items-center justify-between p-24">
