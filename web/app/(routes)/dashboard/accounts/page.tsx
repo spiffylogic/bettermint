@@ -1,15 +1,16 @@
 'use client'
 
-import { useContext, useEffect, useState } from "react";
-import UserContext from '@/app/lib/userContext';
+import { useEffect, useState } from "react";
 import { Account } from '@/app/lib/model';
 import * as server from  '@/app/services/bettermint';
+import getUser from "@/app/lib/firebase/getUser";
 
 export default function Accounts() {
     const [accounts, setAccounts] = useState<Account[]>([]);
-    const { user } = useContext(UserContext);
+    const user = getUser();
 
     useEffect(() => {
+        console.log("Accounts useEffect")
         if (user?.uid) {
             // self-invoking async function, since useEffect is not async
             (async() => {

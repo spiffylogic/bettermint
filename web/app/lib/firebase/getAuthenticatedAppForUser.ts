@@ -8,7 +8,7 @@ import {
 } from "firebase/auth";
 import { firebaseAuth, firebaseApp, firebaseConfig } from "@/app/lib/firebase/firebase";
 
-export async function getAuthenticatedAppForUser(session: string | null | undefined = null) {
+export default async function getAuthenticatedAppForUser(session: string | null | undefined = null) {
   if (typeof window !== "undefined") {
     // client
     console.log("client: ", firebaseApp);

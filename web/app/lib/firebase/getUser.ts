@@ -1,13 +1,15 @@
 // This code was adapted from https://github.com/firebase/friendlyeats-web.git
 // which comes from the code lab https://firebase.google.com/codelabs/firebase-nextjs
 
+'use client';
+
 import { User, onAuthStateChanged } from 'firebase/auth'
 import { useEffect, useState } from 'react'
 
 import { firebaseAuth } from '@/app/lib/firebase/firebase'
 import { useRouter } from 'next/navigation'
 
-export function getUser() {
+export default function getUser() {
 	const [user, setUser] = useState<User | null>(null)
 	const router = useRouter()
 

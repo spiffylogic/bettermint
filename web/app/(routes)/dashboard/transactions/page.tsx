@@ -1,19 +1,20 @@
 'use client'
 
+import getUser from '@/app/lib/firebase/getUser';
 import { Transaction } from '@/app/lib/model';
-import UserContext from '@/app/lib/userContext';
 import * as server from  '@/app/services/bettermint';
 import { lusitana } from "@/app/ui/fonts";
 import TransactionsTable from "@/app/ui/transactions-table";
 
 import { ArrowPathRoundedSquareIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Transactions() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const { user } = useContext(UserContext);
+    const user = getUser();
 
     useEffect(() => {
+        console.log("Transactions useEffect")
         clientRefresh()
     }, [user]);
 

@@ -1,38 +1,33 @@
 'use client'
 
+import { onAuthStateChanged, signInWithGoogle } from '@/app/lib/firebase/auth';
 import Logo from '@/app/ui/logo';
-import UserContext from '@/app/lib/userContext';
-import { onAuthStateChangedHelper, signInWithGoogle } from '@/app/lib/firebase';
 
-import { User } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 
 export default function LoginPage() {
-  const { user, setUser } = useContext(UserContext);
-  const router = useRouter();
+  const router = useRouter()
 
   useEffect(() => {
-      const unsubscribe = onAuthStateChangedHelper((user: User | null) => {
-          setUser(user);
-          if (user && user?.uid) {
-              const requestOptions = {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                      identifier: user?.email,
-                      display_name: user?.displayName
-                  })
-              };
-              fetch(`http://localhost:5000/users/${user?.uid}`, requestOptions);
-              router.push("/dashboard");
-          }
-      });
+		const unsubscribe = onAuthStateChanged((user) => {
+      if (user && user?.uid) {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                identifier: user?.email,
+                display_name: user?.displayName
+            })
+        };
+        fetch(`http://localhost:5000/users/${user?.uid}`, requestOptions);
+        router.push("/dashboard");
+      };
+    });
 
-      // Cleanup subscription on unmount
-      return () => unsubscribe();
-  // empty dependency array means this effect will only run once (like componentDidMount in classes)
-  }, []);
+		return () => unsubscribe();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
   return (
     <main className="flex items-center justify-center md:h-screen">
