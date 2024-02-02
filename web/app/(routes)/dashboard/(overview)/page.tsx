@@ -1,14 +1,17 @@
-'use client';
+import getServerUser from '@/app/lib/firebase/getServerUser'
 
-import getUser from "@/app/lib/firebase/getUser";
+export default async function App() {
+  const user = await getServerUser()
+  const formattedString = JSON.stringify(user, null, "\t");
 
-export default function Home() {
-    const user = getUser();
-
-    return (
-        <main className="flex flex-col items-center justify-between p-24">
-            <h1>DASHBOARD for { user ? user?.displayName : "Nobody" }
-            </h1>
-        </main>
-    )
+  return (
+    <div className='mx-auto max-w-4xl my-32 '>
+      <h1 className='text-3xl mb-8'>Welcome to the protected area of the app</h1>
+      <div className="relative bg-gray-800 p-4 rounded-md shadow-md overflow-x-auto">
+        <pre  className="text-sm text-white font-mono">
+          <code>{formattedString}</code>
+        </pre>
+      </div>
+    </div>
+  )
 }

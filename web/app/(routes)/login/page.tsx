@@ -1,8 +1,9 @@
 'use client'
 
-import { onAuthStateChanged, signInWithGoogle } from '@/app/lib/firebase/auth';
+import { firebaseAuth, provider } from "@/app/lib/firebase/firebase-config";
 import Logo from '@/app/ui/logo';
 
+import { getRedirectResult, signInWithRedirect } from "firebase/auth";
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -10,24 +11,36 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-		const unsubscribe = onAuthStateChanged((user) => {
-      if (user && user?.uid) {
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                identifier: user?.email,
-                display_name: user?.displayName
-            })
-        };
-        fetch(`http://localhost:5000/users/${user?.uid}`, requestOptions);
-        router.push("/dashboard");
-      };
-    });
+    getRedirectResult(firebaseAuth).then(async (userCred) => {
+      if (!userCred || !userCred?.user) {
+        return;
+      }
 
-		return () => unsubscribe();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [])
+      const requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+              identifier: userCred.user?.email,
+              display_name: userCred.user?.displayName
+          })
+      };
+      fetch(`http://localhost:5000/users/${userCred.user?.uid}`, requestOptions);
+      fetch("/api/auth", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await userCred.user.getIdToken()}`,
+        },
+      }).then((response) => {
+        if (response.status === 200) {
+          router.push("/dashboard");
+        }
+      });
+    });
+  }, []);
+
+  function signIn() {
+    signInWithRedirect(firebaseAuth, provider);
+  }
 
   return (
     <main className="flex items-center justify-center md:h-screen">
@@ -38,7 +51,7 @@ export default function LoginPage() {
           </div>
         </div>
         {/* <LoginForm /> */}
-        <button onClick={signInWithGoogle}>
+        <button onClick={signIn}>
           Sign In With Google
         </button>
       </div>
