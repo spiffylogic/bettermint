@@ -1,26 +1,10 @@
-'use client'
-
-import { useEffect, useState } from "react";
 import { Account } from '@/app/lib/model';
 import * as server from  '@/app/services/bettermint';
-import getUser from "@/app/lib/firebase/getUser";
+import getServerUser from "@/app/lib/firebase/getServerUser";
 
-export default function Accounts() {
-    const [accounts, setAccounts] = useState<Account[]>([]);
-    const user = getUser();
-
-    useEffect(() => {
-        console.log("Accounts useEffect")
-        if (user?.uid) {
-            // self-invoking async function, since useEffect is not async
-            (async() => {
-                const data = await server.getAccounts(user?.uid);
-                setAccounts(data);
-            })()
-        } else {
-            setAccounts([]);
-        }
-    }, [user]);
+export default async function Accounts() {
+    const user = await getServerUser();
+    const accounts = await server.getAccounts(user?.uid ?? "");
 
     return (
         <div>
