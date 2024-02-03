@@ -36,7 +36,7 @@ export const saveAccounts = async (accounts: Array<PlaidAccount>, userId: string
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/accounts?user_id=${userId}`, requestOptions);
 }
 
-export const getAccounts = async (userId: string) => {
+export async function getAccounts(userId: string) {
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/accounts?user_id=${userId}`, { method: 'GET' });
     const data = await response.json();
     return data;

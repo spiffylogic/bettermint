@@ -9,7 +9,7 @@ import {
     User,
   } from "firebase/auth";
 
-  import { firebaseAuth } from "@/app/lib/firebase/firebase";
+  import { firebaseAuth } from "@/app/lib/firebase/firebase-config";
 
   export function onAuthStateChanged(cb: NextOrObserver<User>) {
       return _onAuthStateChanged(firebaseAuth, cb);

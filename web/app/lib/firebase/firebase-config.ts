@@ -1,8 +1,7 @@
-// This code was adapted from https://github.com/firebase/friendlyeats-web.git
-// which comes from the code lab https://firebase.google.com/codelabs/firebase-nextjs
+// https://blog.stackademic.com/setting-up-firebase-authentication-with-next-13-app-router-using-server-components-03fbcab254e4
 
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { GoogleAuthProvider, getAuth } from "firebase/auth";
 
 export const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,3 +13,4 @@ export const firebaseConfig = {
 export const firebaseApp =
   getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const firebaseAuth = getAuth(firebaseApp);
+export const provider = new GoogleAuthProvider();

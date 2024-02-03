@@ -1,21 +1,15 @@
 'use client';
 
-import { signOut } from '@/app/lib/firebase/auth';
-import useUserSession from '@/app/lib/firebase/useUserSession';
-
-import { User } from 'firebase/auth';
+import getUser from '@/app/lib/firebase/getUser';
 import { ArrowRightIcon, PowerIcon } from '@heroicons/react/24/outline';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Fragment } from 'react';
 
-interface SignInProps {
-    initialUser: User | null
-}
-
-export default function SignIn({ initialUser }: SignInProps) {
+export default function SignIn() {
     const router = useRouter();
-    const user = useUserSession(initialUser);
+    const user = getUser();
 
     return (
         <Fragment>
@@ -23,8 +17,11 @@ export default function SignIn({ initialUser }: SignInProps) {
                 (
                     <button
                         onClick={() => {
-                            signOut();
-                            router.push("/");
+                            fetch("/api/auth", { method: "DELETE" }).then((response) => {
+                                if (response.status === 200) {
+                                    router.push("/");
+                                }
+                            });
                         }}
                         className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3"
                     >
