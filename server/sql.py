@@ -78,7 +78,7 @@ def get_transaction(id: str) -> Optional[SimpleTransaction]:
 # The row_count specifies the maximum number of rows to return.
 def get_transactions_for_user(user_id: str, offset: int = 0, row_count: int = 10) -> list[SimpleTransaction]:
     sql_statement = """
-        SELECT t.id, t.account_id, t.date, t.name, t.amount
+        SELECT t.id, t.account_id, t.date, t.name, t.amount, t.notes
         FROM transactions AS t
         INNER JOIN accounts AS a
         ON t.account_id = a.id

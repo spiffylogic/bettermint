@@ -9,4 +9,5 @@ export interface Transaction {
     date: Date;
     name: string;
     amount: number;
+    note: string;
 }

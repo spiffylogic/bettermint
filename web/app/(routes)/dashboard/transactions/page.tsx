@@ -7,8 +7,8 @@ import TransactionsTable from "@/app/ui/transactions-table";
 export default async function Transactions() {
     const user = await getServerUser();
     const userId = user?.uid ?? "";
-    console.log(`LOADING TRANSACTIONS FOR ${userId}`);
     var transactions = await server.getTransactions(userId);
+    console.log(`LOADED ${transactions.length} TRANSACTIONS FOR ${userId}`);
 
     return (
         <div className="w-full">

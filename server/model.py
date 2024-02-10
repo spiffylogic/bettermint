@@ -15,6 +15,7 @@ class SimpleTransaction:
     amount: float
     currency_code: str
     pending_transaction_id: str
+    note: str
 
     @staticmethod
     def fromPlaidTransaction(txnObj, userId):
@@ -29,7 +30,8 @@ class SimpleTransaction:
             txnObj['merchant_name'] if 'merchant_name' in txnObj else txnObj['name'],  # Name
             txnObj['amount'],         # Amount
             txnObj['iso_currency_code'],  # Currency Code
-            txnObj['pending_transaction_id']  # Pending Transaction ID
+            txnObj['pending_transaction_id'],  # Pending Transaction ID
+            None
         )
 
     @staticmethod
@@ -46,4 +48,5 @@ class SimpleTransaction:
             float(txnObj['amount']),         # Amount (convert from decimal.Decimal)
             None, # txnObj['iso_currency_code'],  # Currency Code
             None, # txnObj['pending_transaction_id']  # Pending Transaction ID
+            txnObj['notes']
         )

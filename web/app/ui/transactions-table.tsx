@@ -37,6 +37,9 @@ export default function TransactionsTable({ transactions }: { transactions: Tran
             <table className="hidden min-w-full text-gray-900 md:table">
               <thead className="rounded-lg text-left text-sm font-normal">
                 <tr>
+                  <th scope="col" className="px-3 py-5 font-medium">
+                    Date
+                  </th>
                   <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
                     Name
                   </th>
@@ -44,7 +47,7 @@ export default function TransactionsTable({ transactions }: { transactions: Tran
                     Amount
                   </th>
                   <th scope="col" className="px-3 py-5 font-medium">
-                    Date
+                    Note
                   </th>
                 </tr>
               </thead>
@@ -54,6 +57,9 @@ export default function TransactionsTable({ transactions }: { transactions: Tran
                     key={transaction.id}
                     className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
                   >
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </td>
                     <td className="whitespace-nowrap py-3 pl-6 pr-3">
                       <div className="flex items-center gap-3">
                         <p>{transaction.name}</p>
@@ -66,7 +72,7 @@ export default function TransactionsTable({ transactions }: { transactions: Tran
                         })}
                     </td>
                     <td className="whitespace-nowrap px-3 py-3">
-                      {new Date(transaction.date).toLocaleDateString()}
+                      {transaction.note}
                     </td>
                   </tr>
                 ))}
