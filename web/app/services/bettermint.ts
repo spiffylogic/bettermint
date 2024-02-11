@@ -48,6 +48,11 @@ export const getTransactions = async (userId: string) => {
     return data;
 };
 
+export async function getTransaction(id: string) {
+    // TBI
+    return null;
+}
+
 export const syncTransactions = async (userId: string) => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions/sync?user_id=${userId}`, { method: 'POST' });
     const data = await response.json();

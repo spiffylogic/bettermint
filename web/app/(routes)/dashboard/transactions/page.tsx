@@ -1,8 +1,8 @@
 import getServerUser from '@/app/lib/firebase/getServerUser';
 import * as server from  '@/app/services/bettermint';
 import { lusitana } from "@/app/ui/fonts";
-import { ClientRefresh, ServerRefresh } from '@/app/ui/transactions-buttons';
-import TransactionsTable from "@/app/ui/transactions-table";
+import { ClientRefresh, ServerRefresh } from '@/app/ui/transactions/buttons';
+import TransactionsTable from "@/app/ui/transactions/table";
 
 export default async function Transactions() {
     const user = await getServerUser();

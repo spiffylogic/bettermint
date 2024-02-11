@@ -1,4 +1,5 @@
 import { Transaction } from '@/app/lib/model';
+import { EditTransaction } from '@/app/ui/transactions/buttons';
 
 export default function TransactionsTable({ transactions }: { transactions: Transaction[]; }) {
     return (
@@ -41,7 +42,10 @@ export default function TransactionsTable({ transactions }: { transactions: Tran
                     Date
                   </th>
                   <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                    Name
+                    Description
+                  </th>
+                  <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
+                    Category
                   </th>
                   <th scope="col" className="px-3 py-5 font-medium">
                     Amount
@@ -60,10 +64,11 @@ export default function TransactionsTable({ transactions }: { transactions: Tran
                     <td className="whitespace-nowrap px-3 py-3">
                       {new Date(transaction.date).toLocaleDateString()}
                     </td>
-                    <td className="whitespace-nowrap py-3 pl-6 pr-3">
-                      <div className="flex items-center gap-3">
-                        <p>{transaction.name}</p>
-                      </div>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {transaction.name}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {transaction.category}
                     </td>
                     <td className="whitespace-nowrap px-3 py-3">
                         {transaction.amount.toLocaleString('en-CA', {
@@ -73,6 +78,12 @@ export default function TransactionsTable({ transactions }: { transactions: Tran
                     </td>
                     <td className="whitespace-nowrap px-3 py-3">
                       {transaction.note}
+                    </td>
+                    <td className="whitespace-nowrap py-3 pl-6 pr-3">
+                      <div className="flex justify-end gap-3">
+                        <EditTransaction id={transaction.id} />
+                        {/* <DeleteTransaction id={transaction.id} /> */}
+                      </div>
                     </td>
                   </tr>
                 ))}
