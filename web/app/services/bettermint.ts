@@ -1,4 +1,12 @@
+'use server';
+
+import { Transaction } from "@/app/lib/model";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { PlaidAccount } from 'react-plaid-link';
+
+const transactionsPath = '/dashboard/transactions';
 
 export const createLinkToken = async () => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/create_link_token`, { method: 'POST' });
@@ -49,8 +57,21 @@ export const getTransactions = async (userId: string) => {
 };
 
 export async function getTransaction(id: string) {
-    // TBI
-    return null;
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions/${id}`, { method: 'GET' });
+    const data = await response.json();
+    return data;
+}
+
+export async function modifyTransaction(transaction: Transaction) {
+    console.log(transaction);
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transaction)
+    };
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions/${transaction.id}`, requestOptions);
+    revalidatePath(transactionsPath);
+    redirect(transactionsPath);
 }
 
 export const syncTransactions = async (userId: string) => {
