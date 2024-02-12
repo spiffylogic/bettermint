@@ -65,7 +65,7 @@ def delete_account(account_id: str) -> bool:
 
 def get_transaction(id: str) -> Optional[SimpleTransaction]:
     sql_statement = """
-        SELECT id, account_id, date, name, amount
+        SELECT id, account_id, date, name, amount, notes
         FROM transactions
         WHERE id = %s
     """
@@ -120,10 +120,22 @@ def add_transaction(transaction: SimpleTransaction):
 def modify_transaction(transaction: SimpleTransaction):
     sql_statement = """
         UPDATE transactions
-        SET account_id = %s, date = %s, name = %s, amount = %s
+        SET
+        account_id = IFNULL(%s, account_id),
+        date = IFNULL(%s, date),
+        name = IFNULL(%s, name),
+        amount = IFNULL(%s, amount),
+        notes = IFNULL(%s, notes)
         WHERE id = %s
     """
-    sql_data = (transaction.account_id, transaction.date, transaction.name or "", transaction.amount, transaction.id)
+    sql_data = (
+        transaction.account_id,
+        transaction.date,
+        transaction.name,
+        transaction.amount,
+        transaction.note,
+        transaction.id
+    )
     return db_write(sql_statement, sql_data)
 
 def delete_transaction(transaction_id: str) -> bool:

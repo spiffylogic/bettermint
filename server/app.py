@@ -135,8 +135,9 @@ def accounts():
 
 # Get transactions that we have already synced from Plaid (client refresh).
 # TODO: a count of ALL transactions would be useful for client.
-@app.route('/transactions', methods = ['GET'])
+@app.route('/transactions', methods = ['GET', 'POST'])
 def transactions():
+    # TODO: check GET vs POST. Use POST to create a transaction.
     page = int(request.args.get('page') or 0)
     page_size = int(request.args.get('page_size') or 100)
     user_id = request.args.get('user_id')
@@ -144,23 +145,26 @@ def transactions():
     return transactions
 
 # Manage individual transactions.
+# See PUT vs POST: https://stackoverflow.com/questions/630453/what-is-the-difference-between-post-and-put-in-http
 @app.route('/transactions/<transaction_id>', methods = ['GET', 'POST', 'DELETE'])
 def transaction(transaction_id):
     if request.method == 'GET':
         return jsonify(get_transaction(transaction_id))
     if request.method == 'POST':
-        d = datetime.strptime(request.json['date'], '%Y-%m-%d')
+        # This method DNE?
+        # d = datetime.strptime(request.json['date'], '%Y-%m-%d')
         simple_transaction = SimpleTransaction(
             transaction_id,
             request.args.get('user_id'),
-            request.json['account_id'],
+            request.json.get('account_id'),
             None, # category
-            d, # date
+            None, # date
             None, # authorized_date
-            request.json['name'],
-            request.json['amount'],
-            None,
-            None
+            request.json.get('name'),
+            request.json.get('amount'),
+            None, # currency code
+            None, # pending transaction ID
+            request.json.get('note'), # note
         )
         if not modify_transaction(simple_transaction): abort(500)
         return '{{}}'

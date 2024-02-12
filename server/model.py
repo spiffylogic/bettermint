@@ -31,7 +31,7 @@ class SimpleTransaction:
             txnObj['amount'],         # Amount
             txnObj['iso_currency_code'],  # Currency Code
             txnObj['pending_transaction_id'],  # Pending Transaction ID
-            None
+            None, # Note
         )
 
     @staticmethod
