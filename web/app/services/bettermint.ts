@@ -2,13 +2,14 @@
 
 import { Transaction } from "@/app/lib/model";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
 import { PlaidAccount } from 'react-plaid-link';
 
 const transactionsPath = '/dashboard/transactions';
 
 export const createLinkToken = async () => {
+    noStore();
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/create_link_token`, { method: 'POST' });
     const { link_token } = await response.json();
     return link_token
@@ -45,25 +46,27 @@ export const saveAccounts = async (accounts: Array<PlaidAccount>, userId: string
 }
 
 export async function getAccounts(userId: string) {
+    noStore();
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/accounts?user_id=${userId}`, { method: 'GET' });
     const data = await response.json();
     return data;
 };
 
 export const getTransactions = async (userId: string) => {
+    noStore();
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions?user_id=${userId}`, { method: 'GET' });
     const data = await response.json();
     return data;
 };
 
 export async function getTransaction(id: string) {
+    noStore();
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions/${id}`, { method: 'GET' });
     const data = await response.json();
     return data;
 }
 
 export async function modifyTransaction(transaction: Transaction) {
-    console.log(transaction);
     const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
