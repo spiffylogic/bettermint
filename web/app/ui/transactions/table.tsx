@@ -1,5 +1,5 @@
 import { Transaction } from '@/app/lib/model';
-import { EditTransaction } from '@/app/ui/transactions/buttons';
+import { DeleteTransaction, EditTransaction } from '@/app/ui/transactions/buttons';
 
 export default function TransactionsTable({ transactions }: { transactions: Transaction[]; }) {
     return (
@@ -82,7 +82,7 @@ export default function TransactionsTable({ transactions }: { transactions: Tran
                     <td className="whitespace-nowrap py-3 pl-6 pr-3">
                       <div className="flex justify-end gap-3">
                         <EditTransaction id={transaction.id} />
-                        {/* <DeleteTransaction id={transaction.id} /> */}
+                        <DeleteTransaction id={transaction.id} />
                       </div>
                     </td>
                   </tr>

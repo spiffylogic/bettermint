@@ -167,10 +167,10 @@ def transaction(transaction_id):
             request.json.get('note'), # note
         )
         if not modify_transaction(simple_transaction): abort(500)
-        return '{{}}'
+        return '{}'
     if request.method == 'DELETE':
         if not delete_transaction(transaction_id): abort(500)
-        return '{{}}'
+        return '{}'
     else:
         # POST Error 405 Method Not Allowed
         abort(405)

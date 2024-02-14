@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowPathRoundedSquareIcon, ArrowsUpDownIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { ArrowPathRoundedSquareIcon, ArrowsUpDownIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import * as server from  '@/app/services/bettermint';
 
 import Link from 'next/link';
@@ -48,16 +48,23 @@ export function ServerRefresh({ userId }: { userId: string }) {
 
 export function EditTransaction({ id }: { id: string }) {
     return (
-      <Link
-        href={`/dashboard/transactions/${id}/edit`}
-        className="rounded-md border p-2 hover:bg-gray-100"
-      >
-        <PencilIcon className="w-5" />
-      </Link>
+        <Link
+          href={`/dashboard/transactions/${id}/edit`}
+          className="rounded-md border p-2 hover:bg-gray-100"
+        >
+          <PencilIcon className="w-5" />
+        </Link>
     );
   }
   
-/*  export function DeleteTransaction({ id }: { id: string }) {
+export function DeleteTransaction({ id }: { id: string }) {
+    const router = useRouter();
+
+    async function deleteTransaction(id: string) {
+        await server.removeTransaction(id);
+        router.refresh()
+    }
+
     const deleteInvoiceWithId = deleteTransaction.bind(null, id);
   
     return (
@@ -68,5 +75,4 @@ export function EditTransaction({ id }: { id: string }) {
         </button>
       </form>
     );
-  }
-*/
+}

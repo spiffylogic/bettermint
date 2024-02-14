@@ -77,6 +77,12 @@ export async function modifyTransaction(transaction: Transaction) {
     redirect(transactionsPath);
 }
 
+export async function removeTransaction(id: string) {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions/${id}`, { method: 'DELETE' });
+    const data = await response.json();
+    return data;
+}
+
 export const syncTransactions = async (userId: string) => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions/sync?user_id=${userId}`, { method: 'POST' });
     const data = await response.json();
