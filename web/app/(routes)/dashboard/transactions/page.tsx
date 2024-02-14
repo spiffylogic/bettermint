@@ -1,7 +1,7 @@
 import getServerUser from '@/app/lib/firebase/getServerUser';
 import * as server from  '@/app/services/bettermint';
 import { lusitana } from "@/app/ui/fonts";
-import { ClientRefresh, ServerRefresh } from '@/app/ui/transactions/buttons';
+import { ClientRefresh, ServerRefresh, CreateTransaction } from '@/app/ui/transactions/buttons';
 import TransactionsTable from "@/app/ui/transactions/table";
 
 export default async function Transactions() {
@@ -18,6 +18,7 @@ export default async function Transactions() {
         <div  className="mt-4 flex items-center justify-normal gap-2 md:mt-8">
             <ClientRefresh />
             <ServerRefresh userId={userId} />
+            <CreateTransaction />
         </div>
         <TransactionsTable transactions={transactions} />
       </div>

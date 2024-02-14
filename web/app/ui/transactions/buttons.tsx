@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowPathRoundedSquareIcon, ArrowsUpDownIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ArrowPathRoundedSquareIcon, ArrowsUpDownIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import * as server from  '@/app/services/bettermint';
 
 import Link from 'next/link';
@@ -46,6 +46,18 @@ export function ServerRefresh({ userId }: { userId: string }) {
     );
 }
 
+export function CreateTransaction() {
+    return (
+        <Link
+            href="/dashboard/transactions/create"
+            className="flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        >
+            <span className="hidden md:block">Add Transaction</span>{' '}
+            <PlusIcon className="h-5 md:ml-4" />
+        </Link>
+    );
+}
+
 export function EditTransaction({ id }: { id: string }) {
     return (
         <Link
@@ -55,8 +67,8 @@ export function EditTransaction({ id }: { id: string }) {
           <PencilIcon className="w-5" />
         </Link>
     );
-  }
-  
+}
+
 export function DeleteTransaction({ id }: { id: string }) {
     const router = useRouter();
 
@@ -66,7 +78,7 @@ export function DeleteTransaction({ id }: { id: string }) {
     }
 
     const deleteInvoiceWithId = deleteTransaction.bind(null, id);
-  
+
     return (
       <form action={deleteInvoiceWithId}>
         <button className="rounded-md border p-2 hover:bg-gray-100">
