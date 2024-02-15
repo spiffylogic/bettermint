@@ -105,10 +105,10 @@ def add_transaction(transaction: SimpleTransaction):
     # TODO: maybe handle duplicate insertions.
     sql_statement = """
         INSERT INTO transactions
-            (id, account_id, date, name, amount)
-        VALUES (%s, %s, %s, %s, %s)
+            (id, account_id, date, name, amount, notes)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """
-    sql_data = (transaction.id, transaction.account_id, transaction.date, transaction.name or "", transaction.amount)
+    sql_data = (transaction.id, transaction.account_id, transaction.date, transaction.name or "", transaction.amount, transaction.note or "")
 
     if transaction.pending_transaction_id:
         # TODO: might be a good time to copy over user-related values from
