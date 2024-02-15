@@ -66,6 +66,17 @@ export async function getTransaction(id: string) {
     return data;
 }
 
+export async function createTransaction(userId: string, transaction: Transaction) {
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transaction)
+    };
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions?user_id=${userId}`, requestOptions);
+    revalidatePath(transactionsPath);
+    redirect(transactionsPath);
+}
+
 export async function modifyTransaction(transaction: Transaction) {
     const requestOptions = {
         method: 'POST',

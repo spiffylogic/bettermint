@@ -1,6 +1,7 @@
-// import { fetchCustomers } from '@/app/lib/data';
+import getServerUser from '@/app/lib/firebase/getServerUser';
 import Breadcrumbs from '@/app/ui/transactions/breadcrumbs';
-// import Form from '@/app/ui/invoices/create-form';
+import CreateTransactionForm from '@/app/ui/transactions/create-form';
+
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-    // const customers = await fetchCustomers();
+    const user = await getServerUser();
+    const userId = user?.uid ?? "";
 
     return (
         <main>
@@ -22,7 +24,7 @@ export default async function Page() {
                     active: true
                 }
             ]} />
-            {/* <Form customers={customers} /> */}
+            <CreateTransactionForm userId={userId} />
         </main>
     );
 }
