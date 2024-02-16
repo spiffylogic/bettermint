@@ -44,6 +44,7 @@ class TransactionTests(unittest.TestCase):
     @mock.patch('app.fetch_new_sync_data', side_effect = removed_fetch_new_sync_data)
     def test_sync_deleted(self, mock_fetch):
         existing_tx = sql.get_transaction(TEST_TRANSACTION_ID)
+        self.assertIsNotNone(existing_tx)
         summary = app.sync_transactions(TEST_USER_ID, TEST_ITEM_ID, None, None)
         self.assertEqual(summary, (0, 1, 0))
         deleted_tx = sql.get_transaction(TEST_TRANSACTION_ID)

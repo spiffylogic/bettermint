@@ -78,11 +78,10 @@ def get_transaction(id: str) -> Optional[SimpleTransaction]:
 # The row_count specifies the maximum number of rows to return.
 def get_transactions_for_user(user_id: str, offset: int = 0, row_count: int = 10) -> list[SimpleTransaction]:
     sql_statement = """
-        SELECT t.id, t.account_id, t.date, t.name, t.amount, t.notes
-        FROM transactions AS t
-        INNER JOIN accounts AS a
-        ON t.account_id = a.id
-        WHERE a.user_id = %s
+        SELECT id, account_id, date, name, amount, notes
+        FROM transactions
+        WHERE user_id = %s
+        ORDER BY date DESC
         LIMIT %s, %s
     """
     sql_data = (user_id, offset, row_count)
@@ -105,15 +104,15 @@ def add_transaction(transaction: SimpleTransaction):
     # TODO: maybe handle duplicate insertions.
     sql_statement = """
         INSERT INTO transactions
-            (id, account_id, date, name, amount, notes)
-        VALUES (%s, %s, %s, %s, %s, %s)
+            (id, user_id, account_id, date, name, amount, notes)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
-    sql_data = (transaction.id, transaction.account_id, transaction.date, transaction.name or "", transaction.amount, transaction.note or "")
+    sql_data = (transaction.id, transaction.user_id, transaction.account_id, transaction.date, transaction.name or "", transaction.amount, transaction.note or "")
 
     if transaction.pending_transaction_id:
         # TODO: might be a good time to copy over user-related values from
         # that other transaction to this one.
-        print("pending transaction")
+        print("WARNING: pending transaction")
 
     return db_write(sql_statement, sql_data)
 

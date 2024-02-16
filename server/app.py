@@ -40,7 +40,6 @@ from plaid.model.transactions_sync_request import TransactionsSyncRequest
 # from plaid.model.transfer_user_address_in_request import TransferUserAddressInRequest
 from uuid6 import uuid7
 
-
 # Local imports
 from model import *
 from plaid_setup import plaid_client, plaid_country_codes, plaid_products
@@ -138,19 +137,16 @@ def accounts():
 # TODO: a count of ALL transactions would be useful for client.
 @app.route('/transactions', methods = ['GET', 'POST'])
 def transactions():
+    user_id = request.args.get('user_id')
     if request.method == 'GET':
         page = int(request.args.get('page') or 0)
         page_size = int(request.args.get('page_size') or 100)
-        user_id = request.args.get('user_id')
         transactions = get_transactions_for_user(user_id, page * page_size, page_size)
         return transactions
     if request.method == 'POST':
-        # TODO: this introduces an issue: transactions not linked to an account, but also not linked to the user.
-        # Solution is either to enforce linkage to an account (which could be a hard-coded "cash" account)
-        # or (probably better) always link transactions to user as well as account (check what Plaid tutorial does).
         transaction = SimpleTransaction(
             str(uuid7()),
-            request.args.get('user_id'),
+            user_id,
             None, # no account for now
             None, # category
             datetime.date.today(), # date
@@ -164,7 +160,7 @@ def transactions():
         if not add_transaction(transaction): abort(500)
         return '{}'
     else:
-        # POST Error 405 Method Not Allowed
+        # Method Not Allowed
         abort(405)
 
 # Manage individual transactions.
@@ -195,7 +191,7 @@ def transaction(transaction_id):
         if not delete_transaction(transaction_id): abort(500)
         return '{}'
     else:
-        # POST Error 405 Method Not Allowed
+        # Method Not Allowed
         abort(405)
 
 # Sync transactions from Plaid (server refresh).
