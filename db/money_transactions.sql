@@ -23,19 +23,22 @@ DROP TABLE IF EXISTS `transactions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `transactions` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `id` varchar(128) NOT NULL,
+  `user_id` varchar(128) NOT NULL,
   `date` date NOT NULL,
-  `description` varchar(150) NOT NULL,
+  `name` varchar(150) NOT NULL,
   `category_id` int unsigned DEFAULT NULL,
   `amount` decimal(19,4) NOT NULL,
   `verified` tinyint(1) NOT NULL DEFAULT '0',
-  `account_id` int unsigned NOT NULL,
+  `account_id` varchar(128) DEFAULT NULL,
   `notes` varchar(2000) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `account_id` (`account_id`),
   KEY `category_id` (`category_id`),
-  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  KEY `transactions_ibfk_1_idx` (`account_id`),
+  KEY `transactions_ibfk_3_idx` (`user_id`),
+  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `transactions_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -48,4 +51,4 @@ CREATE TABLE `transactions` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-25 11:54:29
+-- Dump completed on 2024-02-16 14:10:01
