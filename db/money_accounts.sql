@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `accounts` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `id` varchar(128) NOT NULL,
   `user_id` varchar(128) NOT NULL COMMENT 'The user ID for the account owner.',
   `number` varchar(20) NOT NULL COMMENT 'This could be the masked number from Plaid.',
   `name` varchar(150) DEFAULT NULL,
@@ -31,8 +31,8 @@ CREATE TABLE `accounts` (
   `balance` decimal(19,4) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_accounts_user_id_idx` (`user_id`),
-  CONSTRAINT `fk_accounts_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=87 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `fk_accounts_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -44,4 +44,4 @@ CREATE TABLE `accounts` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-25 11:54:29
+-- Dump completed on 2024-02-16 14:10:01

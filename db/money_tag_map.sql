@@ -24,11 +24,11 @@ DROP TABLE IF EXISTS `tag_map`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tag_map` (
   `tag_id` int unsigned NOT NULL,
-  `transaction_id` int unsigned NOT NULL,
+  `transaction_id` varchar(128) NOT NULL,
   PRIMARY KEY (`tag_id`,`transaction_id`),
-  KEY `transaction_id` (`transaction_id`),
+  KEY `tag_map_ibfk_2_idx` (`transaction_id`),
   CONSTRAINT `tag_map_ibfk_1` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `tag_map_ibfk_2` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`) ON DELETE CASCADE
+  CONSTRAINT `tag_map_ibfk_2` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -41,4 +41,4 @@ CREATE TABLE `tag_map` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-25 11:54:29
+-- Dump completed on 2024-02-16 14:10:01

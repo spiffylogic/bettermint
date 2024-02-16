@@ -26,10 +26,11 @@ CREATE TABLE `items` (
   `id` varchar(128) NOT NULL,
   `user_id` varchar(128) NOT NULL,
   `access_token` varchar(2048) NOT NULL,
-  `bank_name` varchar(128) DEFAULT NULL,
+  `transaction_cursor` varchar(256) DEFAULT NULL,
+  `institution_name` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_items_user_id_idx` (`user_id`),
-  CONSTRAINT `fk_items_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+  CONSTRAINT `fk_items_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -42,4 +43,4 @@ CREATE TABLE `items` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-25 11:54:29
+-- Dump completed on 2024-02-16 14:10:01
