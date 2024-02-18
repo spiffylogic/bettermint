@@ -141,7 +141,10 @@ def transactions():
     if request.method == 'GET':
         page = int(request.args.get('page') or 0)
         page_size = int(request.args.get('page_size') or 100)
-        transactions = get_transactions_for_user(user_id, page * page_size, page_size)
+        transactions = get_transactions_for_user(user_id,
+                                                 page * page_size,
+                                                 page_size,
+                                                 request.args.get('q'))
         return transactions
     if request.method == 'POST':
         transaction = SimpleTransaction(

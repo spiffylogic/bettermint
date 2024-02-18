@@ -52,12 +52,12 @@ export async function getAccounts(userId: string) {
     return data;
 };
 
-export const getTransactions = async (userId: string) => {
+export async function getTransactions(userId: string) {
     noStore();
     const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions?user_id=${userId}`, { method: 'GET' });
     const data = await response.json();
     return data;
-};
+}
 
 export async function getTransaction(id: string) {
     noStore();

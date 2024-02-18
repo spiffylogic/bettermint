@@ -76,15 +76,38 @@ def get_transaction(id: str) -> Optional[SimpleTransaction]:
 
 # The offset specifies the offset of the first row to return. The offset of the first row is 0, not 1.
 # The row_count specifies the maximum number of rows to return.
-def get_transactions_for_user(user_id: str, offset: int = 0, row_count: int = 10) -> list[SimpleTransaction]:
+# The query is an optional string of search terms.
+def get_transactions_for_user(user_id: str,
+                              offset: int = 0,
+                              row_count: int = 10,
+                              query: Optional[str] = None) -> list[SimpleTransaction]:
+    print("GET {}".format(query));
     sql_statement = """
         SELECT id, account_id, date, name, amount, notes
         FROM transactions
-        WHERE user_id = %s
-        ORDER BY date DESC
-        LIMIT %s, %s
+        WHERE user_id = %(id)s
     """
-    sql_data = (user_id, offset, row_count)
+    if query:
+        # TODO: make search more robust by splitting the query terms. e.g. "a b" should match "b c a".
+        # For each field f and words a and b we need: (f like a and f like b)
+        sql_statement += """
+            AND (
+                name LIKE %(query)s OR
+                amount LIKE %(query)s OR
+                notes LIKE %(query)s
+            )
+        """
+    sql_statement += """
+        ORDER BY date DESC
+        LIMIT %(offset)s, %(row_count)s
+    """
+    sql_data = {
+        'id': user_id,
+        'query': '%{}%'.format(query),
+        'offset': offset,
+        'row_count': row_count
+    }
+    # sql_data = (user_id, offset, row_count)
     rows = db_read(sql_statement, sql_data)
     return list(map(lambda x: SimpleTransaction.fromSQLTransaction(x), rows))
 
