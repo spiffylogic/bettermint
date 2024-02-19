@@ -1,13 +1,23 @@
 import { Transaction } from '@/app/lib/model';
+import * as server from  '@/app/services/bettermint';
 import { DeleteTransaction, EditTransaction } from '@/app/ui/transactions/buttons';
 
-export default function TransactionsTable({ transactions }: { transactions: Transaction[]; }) {
+export default async function TransactionsTable({
+    userId,
+    query
+}: {
+    userId: string;
+    query: string;
+}) {
+    var transactions = await server.getTransactions(userId, query);
+    console.log(`LOADED ${transactions.length} TRANSACTIONS FOR ${userId}`);
+
     return (
         <div className="mt-6 flow-root">
         <div className="inline-block min-w-full align-middle">
           <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
             <div className="md:hidden">
-              {transactions?.map((transaction) => (
+              {transactions?.map((transaction: Transaction) => (
                 <div
                   key={transaction.id}
                   className="mb-2 w-full rounded-md bg-white p-4"
@@ -56,7 +66,7 @@ export default function TransactionsTable({ transactions }: { transactions: Tran
                 </tr>
               </thead>
               <tbody className="bg-white">
-                {transactions?.map((transaction) => (
+                {transactions?.map((transaction: Transaction) => (
                   <tr
                     key={transaction.id}
                     className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"

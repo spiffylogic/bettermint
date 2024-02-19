@@ -52,9 +52,13 @@ export async function getAccounts(userId: string) {
     return data;
 };
 
-export async function getTransactions(userId: string) {
+export async function getTransactions(userId: string, query: string) {
     noStore();
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions?user_id=${userId}`, { method: 'GET' });
+    var url = `${process.env.NEXT_PUBLIC_SERVER_URL}/transactions?user_id=${userId}`;
+    if (query) {
+        url += `&q=${query}`;
+    }
+    const response = await fetch(url, { method: 'GET' });
     const data = await response.json();
     return data;
 }
