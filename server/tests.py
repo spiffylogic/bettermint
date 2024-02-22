@@ -50,4 +50,8 @@ class TransactionTests(unittest.TestCase):
         deleted_tx = sql.get_transaction(TEST_TRANSACTION_ID)
         self.assertIsNone(deleted_tx)
 
+    def test_get_transaction_count(self):
+        count = sql.get_transaction_count(TEST_USER_ID)
+        self.assertEqual(count, 1)
+
 unittest.main()

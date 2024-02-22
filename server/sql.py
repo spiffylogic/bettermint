@@ -74,16 +74,8 @@ def get_transaction(id: str) -> Optional[SimpleTransaction]:
     if len(rows) != 1: return None
     return SimpleTransaction.fromSQLTransaction(rows[0])
 
-# The offset specifies the offset of the first row to return. The offset of the first row is 0, not 1.
-# The row_count specifies the maximum number of rows to return.
-# The query is an optional string of search terms.
-def get_transactions_for_user(user_id: str,
-                              offset: int = 0,
-                              row_count: int = 10,
-                              query: Optional[str] = None) -> list[SimpleTransaction]:
-    print("GET {}".format(query));
+def transaction_sql_statement_base(query: str) -> str:
     sql_statement = """
-        SELECT id, account_id, date, name, amount, notes
         FROM transactions
         WHERE user_id = %(id)s
     """
@@ -97,6 +89,27 @@ def get_transactions_for_user(user_id: str,
                 notes LIKE %(query)s
             )
         """
+    return sql_statement
+
+def get_transaction_count(user_id: str,
+                          query: Optional[str] = None) -> int:
+    sql_statement = "SELECT COUNT(*)"
+    sql_statement += transaction_sql_statement_base(query)
+    sql_data = {
+        'id': user_id,
+        'query': '%{}%'.format(query)
+    }
+    return db_read_value(sql_statement, sql_data)
+
+# The offset specifies the offset of the first row to return. The offset of the first row is 0, not 1.
+# The row_count specifies the maximum number of rows to return.
+# The query is an optional string of search terms.
+def get_transactions(user_id: str,
+                     offset: int = 0,
+                     row_count: int = 10,
+                     query: Optional[str] = None) -> list[SimpleTransaction]:
+    sql_statement = "SELECT id, account_id, date, name, amount, notes"
+    sql_statement += transaction_sql_statement_base(query)
     sql_statement += """
         ORDER BY date DESC
         LIMIT %(offset)s, %(row_count)s
@@ -107,7 +120,6 @@ def get_transactions_for_user(user_id: str,
         'offset': offset,
         'row_count': row_count
     }
-    # sql_data = (user_id, offset, row_count)
     rows = db_read(sql_statement, sql_data)
     return list(map(lambda x: SimpleTransaction.fromSQLTransaction(x), rows))
 
@@ -243,16 +255,18 @@ def db_read(statement, data) -> list[dict]:
             cursor.close()
             connection.close()
 
-# TODO: Try this consolidated approach (eliminates duplication)
-def db_query(read_function, write_function) -> list or bool:
-    if not read_function or not write_function: return
+def db_read_value(statement, data) -> Optional[int or str]:
+    value = None
+    with db_connection() as connection, connection.cursor() as cursor:
+        cursor.execute(statement, data)
+        result = cursor.fetchone()
+        value = result[0]
+    return value
+
+def db_connection():
     try:
         connection = mysql.connector.connect(**mysql_config)
-        cursor = connection.cursor()
-
-        if read_function: return read_function(cursor, connection)
-        else: return write_function(cursor, connection)
-
+        return connection
     except mysql.connector.Error as err:
         if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
             print("Access to DB denied")
@@ -261,7 +275,3 @@ def db_query(read_function, write_function) -> list or bool:
         else:
             print(err)
         return None
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
