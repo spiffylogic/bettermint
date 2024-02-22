@@ -1,7 +1,8 @@
-import datetime
+import datetime, json, math
+
 from flask import abort, Flask, jsonify, request
 from flask_cors import CORS
-import json
+
 import plaid
 # from plaid.model.payment_amount import PaymentAmount
 # from plaid.model.payment_amount_currency import PaymentAmountCurrency
@@ -38,6 +39,7 @@ from plaid.model.transactions_sync_request import TransactionsSyncRequest
 # from plaid.model.ach_class import ACHClass
 # from plaid.model.transfer_create_idempotency_key import TransferCreateIdempotencyKey
 # from plaid.model.transfer_user_address_in_request import TransferUserAddressInRequest
+
 from uuid6 import uuid7
 
 # Local imports
@@ -132,18 +134,28 @@ def accounts():
         abort(405)
 
 # Get transactions that we have already synced from Plaid (client refresh).
-# TODO: a count of ALL transactions would be useful for client.
+# TODO: use data classes
 @app.route('/transactions', methods = ['GET', 'POST'])
 def transactions():
     user_id = request.args.get('user_id')
     if request.method == 'GET':
-        page = int(request.args.get('page') or 0)
+        # NOTE: client uses 1-based page numbers, db uses 0-based offsets.
+        page = int(request.args.get('page') or 1)
         page_size = int(request.args.get('page_size') or 100)
-        transactions = get_transactions(user_id,
-                                                 page * page_size,
-                                                 page_size,
-                                                 request.args.get('q'))
-        return transactions
+        count = get_transaction_count(user_id)
+        total_pages = math.ceil(count / page_size)
+
+        response = {}
+        response['pagination'] = {
+            'current_page': page,
+            'total_pages': total_pages,
+            'total_records': count
+        }
+        response['data'] = get_transactions(user_id,
+                                            (page - 1) * page_size,
+                                            page_size,
+                                            request.args.get('q'))
+        return response
     if request.method == 'POST':
         transaction = SimpleTransaction(
             str(uuid7()),
