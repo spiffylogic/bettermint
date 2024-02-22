@@ -82,8 +82,7 @@ def set_access_token():
         access_token = exchange_response['access_token']
         item_id = exchange_response['item_id']
         # Don't send access_token to client, save it in db.
-        if not save_access_token(user_id, access_token, item_id):
-          abort(500) # Something went wrong
+        save_access_token(user_id, access_token, item_id)
         return jsonify("YAY")
     except plaid.ApiException as e:
         return json.loads(e.body)
@@ -114,7 +113,7 @@ def accounts():
 
     if request.method == 'GET':
         # Return the list of accounts for <user_id>
-        return get_accounts(user_id) # jsonify
+        return get_accounts(user_id)
 
     if request.method == 'POST':
         # Determine if it is a single account or list of accounts
@@ -127,7 +126,6 @@ def accounts():
             for account in accounts:
                 # TODO: add all accounts in a single SQL query
                 save_account(account.get('id'), user_id, account.get('name'), account.get('number'))
-            return '{{}}'
         return '{{}}'
     else:
         # POST Error 405 Method Not Allowed
@@ -141,7 +139,7 @@ def transactions():
     if request.method == 'GET':
         page = int(request.args.get('page') or 0)
         page_size = int(request.args.get('page_size') or 100)
-        transactions = get_transactions_for_user(user_id,
+        transactions = get_transactions(user_id,
                                                  page * page_size,
                                                  page_size,
                                                  request.args.get('q'))
@@ -160,7 +158,7 @@ def transactions():
             None, # pending transaction ID
             request.json.get('note'),
         )
-        if not add_transaction(transaction): abort(500)
+        add_transaction(transaction)
         return '{}'
     else:
         # Method Not Allowed
@@ -188,10 +186,10 @@ def transaction(transaction_id):
             None, # pending transaction ID
             request.json.get('note'), # note
         )
-        if not modify_transaction(simple_transaction): abort(500)
+        modify_transaction(simple_transaction)
         return '{}'
     if request.method == 'DELETE':
-        if not delete_transaction(transaction_id): abort(500)
+        delete_transaction(transaction_id)
         return '{}'
     else:
         # Method Not Allowed
