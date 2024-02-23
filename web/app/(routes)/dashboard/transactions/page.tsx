@@ -2,7 +2,6 @@ import getServerUser from '@/app/lib/firebase/getServerUser';
 import { lusitana } from "@/app/ui/fonts";
 import Search from '@/app/ui/search';
 import { ClientRefresh, ServerRefresh, CreateTransaction } from '@/app/ui/transactions/buttons';
-import Pagination from '@/app/ui/transactions/pagination';
 import TransactionsTable from "@/app/ui/transactions/table";
 
 export default async function Page({
@@ -19,7 +18,6 @@ export default async function Page({
 
     const query = searchParams?.query || '';
     const currentPage = Number(searchParams?.page) || 1;
-    const totalPages = 2; //await fetchInvoicesPages(query);
 
     return (
         <div className="w-full">
@@ -34,10 +32,7 @@ export default async function Page({
             <Search placeholder="Search transactions..." />
             <CreateTransaction />
         </div>
-        <TransactionsTable userId={userId} query={query} />
-        <div className="mt-5 flex w-full justify-center">
-            <Pagination totalPages={totalPages} />
-        </div>
+        <TransactionsTable userId={userId} query={query} currentPage={currentPage} />
       </div>
     );
 }

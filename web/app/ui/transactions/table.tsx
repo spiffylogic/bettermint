@@ -1,17 +1,22 @@
 import { Transaction } from '@/app/lib/model';
 import * as server from  '@/app/services/bettermint';
 import { DeleteTransaction, EditTransaction } from '@/app/ui/transactions/buttons';
+import Pagination from '@/app/ui/transactions/pagination';
 
 export default async function TransactionsTable({
     userId,
-    query
+    query,
+    currentPage
 }: {
     userId: string;
     query: string;
+    currentPage: number;
 }) {
-    var response = await server.getTransactions(userId, query);
 
-    return (
+    var response = await server.getTransactions(userId, query, currentPage);
+    const totalPages = response.pagination?.total_pages || 1;
+
+    return (<>
         <div className="mt-6 flow-root">
             <div className="inline-block min-w-full align-middle">
                 <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
@@ -102,5 +107,8 @@ export default async function TransactionsTable({
                 </div>
             </div>
         </div>
-    )
+        <div className="mt-5 flex w-full justify-center">
+            <Pagination totalPages={totalPages} />
+        </div>
+    </>)
 }

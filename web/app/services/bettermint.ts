@@ -52,9 +52,9 @@ export async function getAccounts(userId: string) {
     return data;
 };
 
-export async function getTransactions(userId: string, query: string) {
+export async function getTransactions(userId: string, query: string, currentPage: number) {
     noStore();
-    var url = `${process.env.NEXT_PUBLIC_SERVER_URL}/transactions?user_id=${userId}`;
+    var url = `${process.env.NEXT_PUBLIC_SERVER_URL}/transactions?user_id=${userId}&page=${currentPage}`;
     if (query) {
         url += `&q=${query}`;
     }
