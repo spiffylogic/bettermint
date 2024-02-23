@@ -141,8 +141,12 @@ def transactions():
     if request.method == 'GET':
         # NOTE: client uses 1-based page numbers, db uses 0-based offsets.
         page = int(request.args.get('page') or 1)
-        page_size = int(request.args.get('page_size') or 100)
-        count = get_transaction_count(user_id)
+        page_size = int(request.args.get('page_size') or 10)
+        query = request.args.get('q')
+
+        # TODO: consider performance tradeoffs of fetching all rows and returning the limit
+        # vs two separate queries (count(*) and select rows).
+        count = get_transaction_count(user_id, query)
         total_pages = math.ceil(count / page_size)
 
         response = {}
@@ -154,7 +158,7 @@ def transactions():
         response['data'] = get_transactions(user_id,
                                             (page - 1) * page_size,
                                             page_size,
-                                            request.args.get('q'))
+                                            query)
         return response
     if request.method == 'POST':
         transaction = SimpleTransaction(
