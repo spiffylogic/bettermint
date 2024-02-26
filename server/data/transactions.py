@@ -1,67 +1,6 @@
-import mysql.connector
-from pprint import pprint
-from typing import *
-
+from data.sql import db_read_list, db_read_value, db_write
 from model import SimpleTransaction
-
-mysql_config = {
-    'user': 'money-user',
-    'password': 'money-password',
-    'host': 'localhost',
-    'database': 'money',
-    'raise_on_warnings': True
-}
-
-def save_user(user_id, identifier, display_name):
-    sql_statement = """
-        INSERT INTO users (id, identifier, display_name)
-        VALUES (%s, %s, %s)
-        ON DUPLICATE KEY UPDATE identifier = %s, display_name = %s
-    """
-    sql_data = (user_id, identifier, display_name, identifier, display_name)
-    db_write(sql_statement, sql_data)
-
-def delete_user(user_id: str):
-    sql_statement = """
-        DELETE FROM users
-        WHERE id = %s
-    """
-    sql_data = (user_id, )
-    db_write(sql_statement, sql_data)
-
-def save_access_token(user_id, access_token, item_id):
-    sql_statement = """
-        INSERT INTO items (id, user_id, access_token)
-        VALUES (%s, %s, %s)
-        ON DUPLICATE KEY UPDATE user_id = %s, access_token = %s
-    """
-    sql_data = (item_id, user_id, access_token, user_id, access_token)
-    db_write(sql_statement, sql_data)
-
-def save_account(account_id, user_id, account_name, account_number):
-    sql_statement = """
-        INSERT INTO accounts (id, user_id, name, number)
-        VALUES (%s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE user_id = %s, name = %s, number = %s
-    """
-    sql_data = (account_id, user_id, account_name, account_number, user_id, account_name, account_number)
-    db_write(sql_statement, sql_data)
-
-def get_accounts(user_id) -> list:
-    sql_statement = """
-        SELECT * FROM accounts
-        WHERE user_id = %s
-    """
-    sql_data = (user_id, )
-    return db_read_list(sql_statement, sql_data)
-
-def delete_account(account_id: str):
-    sql_statement = """
-        DELETE FROM accounts
-        WHERE id = %s
-    """
-    sql_data = (account_id, )
-    db_write(sql_statement, sql_data)
+from typing import Optional
 
 def get_transaction(id: str) -> Optional[SimpleTransaction]:
     sql_statement = """
@@ -182,15 +121,6 @@ def delete_transaction(transaction_id: str):
     sql_data = (transaction_id, )
     db_write(sql_statement, sql_data)
 
-def get_plaid_items(user_id) -> list[dict]:
-    sql_statement = """
-        SELECT id, access_token, transaction_cursor
-        FROM items
-        WHERE user_id = %s
-    """
-    sql_data = (user_id, )
-    return db_read_list(sql_statement, sql_data)
-
 def save_transaction_cursor(item_id: str, cursor: str):
     sql_statement = """
         UPDATE items
@@ -199,41 +129,3 @@ def save_transaction_cursor(item_id: str, cursor: str):
     """
     sql_data = (cursor, item_id)
     db_write(sql_statement, sql_data)
-
-# Returns boolean indicating success/failure.
-def db_write(statement, data):
-    with db_connection() as connection, connection.cursor() as cursor:
-        cursor.execute(statement, data)
-        connection.commit()
-
-# Returns list of data as list of json (dict).
-def db_read_list(statement, data) -> list[dict]:
-    json_data = []
-    with db_connection() as connection, connection.cursor() as cursor:
-        cursor.execute(statement, data)
-        rows = cursor.fetchall()
-
-        row_headers = [x[0] for x in cursor.description]
-        json_data = list(map(lambda x: dict(zip(row_headers, x)), rows))
-    return json_data
-
-def db_read_value(statement, data) -> Optional[int or str]:
-    value = None
-    with db_connection() as connection, connection.cursor() as cursor:
-        cursor.execute(statement, data)
-        result = cursor.fetchone()
-        value = result[0]
-    return value
-
-def db_connection():
-    try:
-        connection = mysql.connector.connect(**mysql_config)
-        return connection
-    except mysql.connector.Error as err:
-        if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
-            print("Access to DB denied")
-        elif err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
-            print("Bad DB")
-        else:
-            print(err)
-        return None

@@ -40,12 +40,18 @@ from plaid.model.transactions_sync_request import TransactionsSyncRequest
 # from plaid.model.transfer_create_idempotency_key import TransferCreateIdempotencyKey
 # from plaid.model.transfer_user_address_in_request import TransferUserAddressInRequest
 
+from typing import *
 from uuid6 import uuid7
 
 # Local imports
 from model import *
 from plaid_setup import plaid_client, plaid_country_codes, plaid_products
-from sql import *
+
+from data.users import save_user
+from data.accounts import get_accounts, save_account
+from data.users import save_access_token
+from data.transactions import *
+from data.users import get_plaid_items
 
 app = Flask(__name__)
 CORS(app)
