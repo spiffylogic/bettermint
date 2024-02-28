@@ -16,7 +16,7 @@ def db_write(statement, data):
         connection.commit()
 
 # Returns list of data as list of json (dict).
-def db_read_list(statement, data) -> list[dict]:
+def db_read_list(statement, data = ()) -> list[dict]:
     json_data = []
     with db_connection() as connection, connection.cursor() as cursor:
         cursor.execute(statement, data)

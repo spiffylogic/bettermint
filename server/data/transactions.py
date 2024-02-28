@@ -75,7 +75,9 @@ def get_transactions_for_account(account_id: str) -> list[SimpleTransaction]:
 def add_transaction(transaction: SimpleTransaction):
     # print("ADDING {}".format(transaction.id))
     # pprint(vars(transaction))
-    # TODO: maybe handle duplicate insertions.
+    # TODO: handle duplicate insertions.
+    # Example error on write:
+    # mysql.connector.errors.IntegrityError: 1062 (23000): Duplicate entry 'Qna3gxg1r8ugxzNPdoGjcMm5X9aGJnsjlq7eW' for key 'transactions.PRIMARY'
     sql_statement = """
         INSERT INTO transactions
             (id, user_id, account_id, date, name, amount, notes)
