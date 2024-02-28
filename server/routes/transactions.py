@@ -104,7 +104,7 @@ def transactions_sync():
     return summary
 
 def sync_transactions(user_id: str, item_id: str, access_token: str, cursor: str) -> Optional[tuple]:
-    print("SYNC TRANSACTIONS FOR {}, {}, {}".format(user_id, access_token, cursor))
+    print("SYNCING TRANSACTIONS FOR {}, {}, {}".format(user_id, access_token, cursor))
     added_count, removed_count, modified_count = 0, 0, 0
     try:
         # 2. fetch all transactions since last cursor

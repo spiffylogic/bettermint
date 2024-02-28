@@ -1,5 +1,8 @@
 from data.sql import db_read_list, db_read_value, db_write
 from model import SimpleTransaction
+
+from mysql.connector.errors import IntegrityError
+from pprint import pprint
 from typing import Optional
 
 def get_transaction(id: str) -> Optional[SimpleTransaction]:
@@ -73,11 +76,6 @@ def get_transactions_for_account(account_id: str) -> list[SimpleTransaction]:
     return list(map(lambda x: SimpleTransaction.fromSQLTransaction(x), rows))
 
 def add_transaction(transaction: SimpleTransaction):
-    # print("ADDING {}".format(transaction.id))
-    # pprint(vars(transaction))
-    # TODO: handle duplicate insertions.
-    # Example error on write:
-    # mysql.connector.errors.IntegrityError: 1062 (23000): Duplicate entry 'Qna3gxg1r8ugxzNPdoGjcMm5X9aGJnsjlq7eW' for key 'transactions.PRIMARY'
     sql_statement = """
         INSERT INTO transactions
             (id, user_id, account_id, date, name, amount, notes)
@@ -88,9 +86,16 @@ def add_transaction(transaction: SimpleTransaction):
     if transaction.pending_transaction_id:
         # TODO: might be a good time to copy over user-related values from
         # that other transaction to this one.
-        print("WARNING: pending transaction")
+        print("WARNING: {} has pending transaction {}".format(transaction.id, transaction.pending_transaction_id))
 
-    db_write(sql_statement, sql_data)
+    try:
+        db_write(sql_statement, sql_data)
+    except IntegrityError:
+        # TODO: handle duplicate insertions.
+        # Example error on write:
+        # mysql.connector.errors.IntegrityError: 1062 (23000): Duplicate entry 'Qna3gxg1r8ugxzNPdoGjcMm5X9aGJnsjlq7eW' for key 'transactions.PRIMARY'
+        print("WARNING: ignoring duplicate transaction {}".format(transaction.id))
+        pprint(vars(transaction))
 
 def modify_transaction(transaction: SimpleTransaction):
     sql_statement = """
