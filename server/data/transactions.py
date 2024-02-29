@@ -5,42 +5,45 @@ from mysql.connector.errors import IntegrityError
 from pprint import pprint
 from typing import Optional
 
-def get_transaction(id: str) -> Optional[SimpleTransaction]:
-    sql_statement = """
-        SELECT id, account_id, date, name, amount, notes
-        FROM transactions
-        WHERE id = %s
-    """
-    sql_data = (id, )
-    rows = db_read_list(sql_statement, sql_data)
-    if len(rows) != 1: return None
-    return SimpleTransaction.fromSQLTransaction(rows[0])
+def build_sql_statement(data: dict, count: bool = False):
+    fields = "id, account_id, date, name, amount, notes"
+    statement = "SELECT {} FROM transactions\n".format("COUNT(*)" if count else fields)
 
-def transaction_sql_statement_base(query: str) -> str:
-    sql_statement = """
-        FROM transactions
-        WHERE user_id = %(id)s
-    """
-    if query:
+    if 'user_id' in data:
+        statement += "WHERE user_id = %(user_id)s\n"
+    elif 'account_id' in data:
+        statement += "WHERE account_id = %(id)s\n"
+    elif 'id' in data:
+        statement += "WHERE id = %(id)s\n"
+
+    if 'query' in data:
         # TODO: make search more robust by splitting the query terms. e.g. "a b" should match "b c a".
         # For each field f and words a and b we need: (f like a and f like b)
-        sql_statement += """
+        statement += """
             AND (
                 name LIKE %(query)s OR
                 amount LIKE %(query)s OR
                 notes LIKE %(query)s
             )
         """
-    return sql_statement
+    statement += "ORDER BY date DESC\n"
+    if 'offset' in data and 'row_count' in data:
+        statement += "LIMIT %(offset)s, %(row_count)s\n"
+    return statement
+
+def get_transaction(id: str) -> Optional[SimpleTransaction]:
+    sql_data = { 'id': id }
+    sql_statement = build_sql_statement(sql_data)
+    rows = db_read_list(sql_statement, sql_data)
+    if len(rows) != 1: return None
+    return SimpleTransaction.fromSQLTransaction(rows[0])
 
 def get_transaction_count(user_id: str,
                           query: Optional[str] = None) -> int:
-    sql_statement = "SELECT COUNT(*)"
-    sql_statement += transaction_sql_statement_base(query)
-    sql_data = {
-        'id': user_id,
-        'query': '%{}%'.format(query)
-    }
+    sql_data = {}
+    sql_data['user_id'] = user_id
+    if query: sql_data['query'] = '%{}%'.format(query)
+    sql_statement = build_sql_statement(sql_data, count = True)
     return db_read_value(sql_statement, sql_data)
 
 # The offset specifies the offset of the first row to return. The offset of the first row is 0, not 1.
@@ -50,28 +53,19 @@ def get_transactions(user_id: str,
                      offset: int = 0,
                      row_count: int = 10,
                      query: Optional[str] = None) -> list[SimpleTransaction]:
-    sql_statement = "SELECT id, account_id, date, name, amount, notes"
-    sql_statement += transaction_sql_statement_base(query)
-    sql_statement += """
-        ORDER BY date DESC
-        LIMIT %(offset)s, %(row_count)s
-    """
     sql_data = {
-        'id': user_id,
-        'query': '%{}%'.format(query),
+        'user_id': user_id,
         'offset': offset,
         'row_count': row_count
     }
+    if query: sql_data['query'] = '%{}%'.format(query)
+    sql_statement = build_sql_statement(sql_data)
     rows = db_read_list(sql_statement, sql_data)
     return list(map(lambda x: SimpleTransaction.fromSQLTransaction(x), rows))
 
 def get_transactions_for_account(account_id: str) -> list[SimpleTransaction]:
-    sql_statement = """
-        SELECT id, account_id, date, name, amount
-        FROM transactions
-        WHERE account_id = %s
-    """
-    sql_data = (account_id, )
+    sql_data = { 'account_id': account_id }
+    sql_statement = build_sql_statement(sql_data)
     rows = db_read_list(sql_statement, sql_data)
     return list(map(lambda x: SimpleTransaction.fromSQLTransaction(x), rows))
 
@@ -92,8 +86,6 @@ def add_transaction(transaction: SimpleTransaction):
         db_write(sql_statement, sql_data)
     except IntegrityError:
         # TODO: handle duplicate insertions.
-        # Example error on write:
-        # mysql.connector.errors.IntegrityError: 1062 (23000): Duplicate entry 'Qna3gxg1r8ugxzNPdoGjcMm5X9aGJnsjlq7eW' for key 'transactions.PRIMARY'
         print("WARNING: ignoring duplicate transaction {}".format(transaction.id))
         pprint(vars(transaction))
 
