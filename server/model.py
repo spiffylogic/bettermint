@@ -1,5 +1,6 @@
 import datetime
 from dataclasses import dataclass
+from typing import Optional
 
 # A simple object to pass to our database functions that represents the data
 # our application cares about from the Plaid transaction endpoint.
@@ -50,3 +51,15 @@ class SimpleTransaction:
             None, # txnObj['pending_transaction_id']  # Pending Transaction ID
             txnObj['notes']
         )
+
+@dataclass
+class Category:
+    id: int
+    parent_id: Optional[int]
+    name: str
+
+    @staticmethod
+    def fromSQLCategory(obj):
+        return Category(obj['id'],
+                        obj['parent_id'],
+                        obj['name'])

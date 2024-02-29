@@ -52,7 +52,7 @@ from data.transactions import *
 app = Flask(__name__)
 CORS(app)
 
-import routes.transactions
+import routes.transactions, routes.categories
 
 # Create Plaid Link token
 @app.route('/create_link_token', methods=['POST'])
