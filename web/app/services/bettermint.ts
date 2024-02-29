@@ -83,7 +83,7 @@ export async function createTransaction(userId: string, transaction: Transaction
 
 export async function modifyTransaction(transaction: Transaction) {
     const requestOptions = {
-        method: 'POST',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(transaction)
     };

@@ -61,11 +61,11 @@ def transactions():
 
 # Manage individual transactions.
 # See PUT vs POST: https://stackoverflow.com/questions/630453/what-is-the-difference-between-post-and-put-in-http
-@app.route('/transactions/<transaction_id>', methods = ['GET', 'POST', 'DELETE'])
+@app.route('/transactions/<transaction_id>', methods = ['GET', 'PATCH', 'DELETE'])
 def transaction(transaction_id):
     if request.method == 'GET':
         return jsonify(get_transaction(transaction_id))
-    if request.method == 'POST':
+    if request.method == 'PATCH':
         # This method DNE?
         # d = datetime.strptime(request.json['date'], '%Y-%m-%d')
         simple_transaction = SimpleTransaction(
