@@ -48,6 +48,7 @@ from data.users import save_user
 from data.accounts import get_accounts, save_account
 from data.users import save_access_token
 from data.transactions import *
+from data.categories import init_categories
 
 app = Flask(__name__)
 CORS(app)
@@ -98,19 +99,19 @@ def set_access_token():
 def user(user_id):
     if request.method == 'GET':
         # TODO: return the information for <user_id>
-        return '{{}}'
+        pass
     if request.method == 'POST':
         # modify/update the information for <user_id>
         # data = request.form # a multidict containing POST data
         if not save_user(user_id, request.json['identifier'], request.json['display_name']):
             abort(500) # Something went wrong
-        return '{{}}'
+        # Initialize categories for user
+        init_categories(user_id)
     if request.method == 'DELETE':
         # TODO: delete user with ID <user_id>
-        return '{{}}'
-    else:
-        # POST Error 405 Method Not Allowed
-        abort(405)
+        pass
+    else: abort(405)
+    return '{{}}'
 
 # Manage accounts.
 @app.route('/accounts', methods = ['GET', 'POST'])
@@ -133,6 +134,4 @@ def accounts():
                 # TODO: add all accounts in a single SQL query
                 save_account(account.get('id'), user_id, account.get('name'), account.get('number'))
         return '{{}}'
-    else:
-        # POST Error 405 Method Not Allowed
-        abort(405)
+    else: abort(405)

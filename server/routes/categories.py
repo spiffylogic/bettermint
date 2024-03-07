@@ -5,10 +5,14 @@ from flask import abort, request
 
 @app.route('/categories', methods = ['GET', 'POST'])
 def categories():
+    user_id = request.args.get('user_id')
+    if not user_id: abort(400)
     if request.method == 'GET':
-        return list_categories()
+        return list_categories(user_id)
     if request.method == 'POST':
-        create_category(request.json['name'])
+        name = request.json['name']
+        if not name: abort(400)
+        create_category(user_id, name)
         return ''
     else: abort(405)
 
