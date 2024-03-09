@@ -1,8 +1,9 @@
 'use client';
 
-import { Transaction } from '@/app/lib/model';
+import { Category, Transaction } from '@/app/lib/model';
 import * as server from '@/app/services/bettermint';
 import { Button } from '@/app/ui/button';
+import { Select, Option } from '@/app/ui/material';
 
 import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -20,7 +21,7 @@ async function modifyTransaction(id: string, formData: FormData) {
     server.modifyTransaction(tx);
 }
 
-export default function EditTransactionForm({transaction}: {transaction: Transaction}) {
+export default function EditTransactionForm({transaction, categories}: {transaction: Transaction, categories: Category[]}) {
   // We want to pass the id to the Server Action so you can update the right record.
   // You cannot simply pass the id as an argument. Instead, you can pass id to the Server Action
   // using JS bind. This will ensure that any values passed to the Server Action are encoded.
@@ -60,6 +61,15 @@ export default function EditTransactionForm({transaction}: {transaction: Transac
           </div>
         </div>
 
+        {/* Categories */}
+        <div className="mt-6 mb-4">
+          <Select variant="static" label="Category" placeholder="PLACEHOLDER">
+            {categories.map((category) => (
+              <Option key={category.id}>{category.name}</Option>)
+            )}
+          </Select>
+        </div>
+
         {/* Notes */}
         <div className="mb-4">
           <label htmlFor="notes" className="mb-2 block text-sm">
@@ -79,6 +89,7 @@ export default function EditTransactionForm({transaction}: {transaction: Transac
           </div>
         </div>
       </div>
+
       <div className="mt-6 flex justify-end gap-4">
         <Link
           href="/dashboard/transactions"

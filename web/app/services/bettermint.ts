@@ -103,3 +103,9 @@ export const syncTransactions = async (userId: string) => {
     const data = await response.json();
     return data;
 };
+
+export async function getCategories(userId: string) {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/categories?user_id=${userId}`, { method: 'GET' });
+    const data = await response.json();
+    return data;
+}

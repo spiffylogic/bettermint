@@ -11,3 +11,8 @@ export interface Transaction {
     amount: number;
     note: string;
 }
+
+export interface Category {
+    id: string;
+    name: string;
+}
