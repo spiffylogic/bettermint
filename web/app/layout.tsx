@@ -1,4 +1,6 @@
 import '@/app/ui/globals.css'
+import { ThemeProvider } from "@/app/ui/material";
+
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
@@ -15,10 +17,12 @@ export default async function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en">
-            <body className={`${inter.className} antialiased`}>
-                {children}
-            </body>
-        </html>
+        <ThemeProvider>
+            <html lang="en">
+                <body className={`${inter.className} antialiased`}>
+                    {children}
+                </body>
+            </html>
+        </ThemeProvider>
     )
 }
