@@ -100,14 +100,12 @@ def user(user_id):
     if request.method == 'GET':
         # TODO: return the information for <user_id>
         pass
-    if request.method == 'POST':
+    elif request.method == 'POST':
         # modify/update the information for <user_id>
-        # data = request.form # a multidict containing POST data
-        if not save_user(user_id, request.json['identifier'], request.json['display_name']):
-            abort(500) # Something went wrong
+        save_user(user_id, request.json['identifier'], request.json['display_name'])
         # Initialize categories for user
-        init_categories(user_id)
-    if request.method == 'DELETE':
+        # init_categories(user_id)
+    elif request.method == 'DELETE':
         # TODO: delete user with ID <user_id>
         pass
     else: abort(405)
