@@ -7,25 +7,37 @@ import { Select, Option } from '@/app/ui/material';
 
 import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { useState } from 'react';
 
-async function modifyTransaction(id: string, formData: FormData) {
+async function modifyTransaction(id: string, category_id: string | null, formData: FormData) {
+  console.log(`FORM DATA ${JSON.stringify(Object.fromEntries(formData))}`);
     // TODO: validation and error handling
     const tx: Transaction = {
-        id: id,
-        category: '',
-        date: new Date(), // TODO: get date from string form data
-        name: formData.get('name')?.toString() || '',
-        amount: Number(formData.get('amount')),
-        note: formData.get('notes')?.toString() || '',
+      id: id,
+      category_id: category_id || '',
+      category_name: '',
+      date: new Date(), // TODO: get date from string form data
+      name: formData.get('name')?.toString() || '',
+      amount: Number(formData.get('amount')),
+      note: formData.get('notes')?.toString() || '',
     };
     server.modifyTransaction(tx);
-}
+  }
 
 export default function EditTransactionForm({transaction, categories}: {transaction: Transaction, categories: Category[]}) {
+  // The select component does not work with server actions. Does not show up in FormData. Hence we use state.
+  const [category_id, setCategory] = useState<string | null>(transaction.category_id);
+
   // We want to pass the id to the Server Action so you can update the right record.
   // You cannot simply pass the id as an argument. Instead, you can pass id to the Server Action
   // using JS bind. This will ensure that any values passed to the Server Action are encoded.
-  const updateTransactionWithId = modifyTransaction.bind(null, transaction.id);
+  const updateTransactionWithId = modifyTransaction.bind(null, transaction.id, category_id);
+
+  const changeCategory = (value?: string) => {
+    if (value) {
+      setCategory(value);
+    }
+  };
 
   return (
     <form action={updateTransactionWithId}>
@@ -63,9 +75,10 @@ export default function EditTransactionForm({transaction, categories}: {transact
 
         {/* Categories */}
         <div className="mt-6 mb-4">
-          <Select variant="static" label="Category" placeholder="PLACEHOLDER">
-            {categories.map((category) => (
-              <Option key={category.id}>{category.name}</Option>)
+          {/* TODO: add empty category option */}
+          <Select variant="static" label="Category" placeholder="PLACEHOLDER" onChange={changeCategory} id="category" value={category_id || undefined} >
+            {categories.map((c) => (
+              <Option key={c.id} value={c.id}>{c.name}</Option>)
             )}
           </Select>
         </div>

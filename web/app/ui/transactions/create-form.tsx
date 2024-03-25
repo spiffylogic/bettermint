@@ -11,18 +11,18 @@ async function createTransaction(userId: string, formData: FormData) {
     console.log(`Creating transaction for ${userId}`);
     // TODO: validation and error handling
     const tx: Transaction = {
-        id: '',
-        category: '',
-        date: new Date(), // TODO: get date from string form data
-        name: '',
-        amount: Number(formData.get('amount')),
-        note: formData.get('notes')?.toString() || '',
+      id: '',
+      category_id: '',
+      category_name: '',
+      date: new Date(), // TODO: get date from string form data
+      name: '',
+      amount: Number(formData.get('amount')),
+      note: formData.get('notes')?.toString() || '',
     };
     server.createTransaction(userId, tx);
 }
 
 export default function CreateTransactionForm({ userId }: { userId: string }) {
-    console.log(`CREATE TRANSACTION FORM FOR ${userId}`);
   // We want to pass the id to the Server Action so you can update the right record.
   // You cannot simply pass the id as an argument. Instead, you can pass id to the Server Action
   // using JS bind. This will ensure that any values passed to the Server Action are encoded.
@@ -52,6 +52,8 @@ export default function CreateTransactionForm({ userId }: { userId: string }) {
             </div>
           </div>
         </div>
+
+        {/* TODO: Categories */}
 
         {/* Notes */}
         <div className="mb-4">

@@ -83,7 +83,7 @@ export default async function TransactionsTable({
                                         {transaction.name}
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-3">
-                                        {transaction.category}
+                                        {transaction.category_name}
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-3">
                                         {transaction.amount.toLocaleString('en-CA', {

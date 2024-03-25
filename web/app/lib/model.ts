@@ -5,7 +5,8 @@ export interface Account {
 
 export interface Transaction {
     id: string;
-    category: string;
+    category_id: string;
+    category_name: string;
     date: Date;
     name: string;
     amount: number;
