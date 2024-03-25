@@ -9,7 +9,6 @@ mysql_config = {
     'raise_on_warnings': True
 }
 
-# Returns boolean indicating success/failure.
 def db_write(statement, data):
     with db_connection() as connection, connection.cursor() as cursor:
         cursor.execute(statement, data)
@@ -26,7 +25,7 @@ def db_read_list(statement, data = ()) -> list[dict]:
         json_data = list(map(lambda x: dict(zip(row_headers, x)), rows))
     return json_data
 
-def db_read_value(statement, data) -> Optional[int or str]:
+def db_read_value(statement, data) -> Optional[int | str]:
     value = None
     with db_connection() as connection, connection.cursor() as cursor:
         cursor.execute(statement, data)
