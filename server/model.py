@@ -2,6 +2,8 @@ import datetime
 from dataclasses import dataclass
 from typing import Optional
 
+from util import snake_to_title_case
+
 # A simple object to pass to our database functions that represents the data
 # our application cares about from the Plaid transaction endpoint.
 @dataclass
@@ -9,14 +11,15 @@ class SimpleTransaction:
     id: str
     user_id: str
     account_id: str
-    category: str
+    category_id: Optional[str]
+    category_name: Optional[str]
     date: datetime.date
     authorized_date: datetime.date
     name: str
     amount: float
     currency_code: str
-    pending_transaction_id: str
-    note: str
+    pending_transaction_id: Optional[str]
+    note: Optional[str]
 
     @staticmethod
     def fromPlaidTransaction(txnObj, userId):
@@ -25,7 +28,11 @@ class SimpleTransaction:
             txnObj['transaction_id'], # ID
             userId,                   # UserID
             txnObj['account_id'],     # Account ID
-            txnObj['personal_finance_category']['primary'], # Category
+            # CATEGORY fields:
+            # - category (old)
+            # - personal_finance_category -> primary, detailed, confidence_level (new)
+            None, # Category ID (not known yet)
+            snake_to_title_case(txnObj['personal_finance_category']['primary']), # Category
             txnObj['date'],           # Date
             txnObj.get('authorized_date'), # Authorized Date (if available)
             txnObj['merchant_name'] if 'merchant_name' in txnObj else txnObj['name'],  # Name
@@ -38,15 +45,17 @@ class SimpleTransaction:
     @staticmethod
     def fromSQLTransaction(txnObj):
         # Static factory method to create a SimpleTransaction object from SQL transaction data
+        # Perhaps the category field shoud be the ID not the name.
         return SimpleTransaction(
-            txnObj['id'], # ID
-            None,                   # UserID
+            txnObj['id'],             # ID
+            None,                     # UserID
             txnObj['account_id'],     # Account ID
-            None, # txnObj['personal_finance_category']['primary'], # Category
+            str(txnObj['category_id']),    # Category
+            txnObj['category_name'],  # Category name
             txnObj['date'],           # Date (datetime.date)
             None, # txnObj.get('authorized_date'), # Authorized Date (if available)
-            txnObj['merchant_name'] if 'merchant_name' in txnObj else txnObj['name'],  # Name
-            float(txnObj['amount']),         # Amount (convert from decimal.Decimal)
+            txnObj['name'],           # Name
+            float(txnObj['amount']),  # Amount (convert from decimal.Decimal)
             None, # txnObj['iso_currency_code'],  # Currency Code
             None, # txnObj['pending_transaction_id']  # Pending Transaction ID
             txnObj['notes']
@@ -54,12 +63,12 @@ class SimpleTransaction:
 
 @dataclass
 class Category:
-    id: int
-    parent_id: Optional[int]
+    id: str
+    parent_id: Optional[str]
     name: str
 
     @staticmethod
     def fromSQLCategory(obj):
-        return Category(obj['id'],
-                        obj['parent_id'],
+        return Category(str(obj['id']),
+                        str(obj['parent_id']) if obj['parent_id'] else '',
                         obj['name'])

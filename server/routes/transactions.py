@@ -44,7 +44,8 @@ def transactions():
             str(uuid7()),
             user_id,
             None, # no account for now
-            None, # category
+            None, # category ID
+            None, # category name
             datetime.date.today(), # date
             None, # authorized_date
             None, # name
@@ -72,7 +73,8 @@ def transaction(transaction_id):
             transaction_id,
             request.args.get('user_id'),
             request.json.get('account_id'),
-            None, # category
+            request.json.get('category_id'),
+            request.json.get('category_name'),
             None, # date
             None, # authorized_date
             request.json.get('name'),

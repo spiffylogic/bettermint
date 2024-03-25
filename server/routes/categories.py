@@ -12,7 +12,7 @@ def categories():
     if request.method == 'POST':
         name = request.json['name']
         if not name: abort(400)
-        create_category(user_id, name)
+        save_category(user_id, name)
         return ''
     else: abort(405)
 

@@ -1,3 +1,4 @@
+from data.categories import get_category_id, save_category
 from data.sql import db_read_list, db_read_value, db_write
 from model import SimpleTransaction
 
@@ -6,15 +7,18 @@ from pprint import pprint
 from typing import Optional
 
 def build_sql_statement(data: dict, count: bool = False):
-    fields = "id, account_id, date, name, amount, notes"
-    statement = "SELECT {} FROM transactions\n".format("COUNT(*)" if count else fields)
+    fields = "t.id, account_id, date, t.name, amount, notes, category_id, c.name as category_name"
+    statement = """
+        SELECT {} FROM transactions AS t
+        LEFT JOIN categories AS c ON t.category_id = c.id
+    """.format("COUNT(*)" if count else fields)
 
     if 'user_id' in data:
-        statement += "WHERE user_id = %(user_id)s\n"
+        statement += "WHERE t.user_id = %(user_id)s\n"
     elif 'account_id' in data:
         statement += "WHERE account_id = %(id)s\n"
     elif 'id' in data:
-        statement += "WHERE id = %(id)s\n"
+        statement += "WHERE t.id = %(id)s\n"
 
     if 'query' in data:
         # TODO: make search more robust by splitting the query terms. e.g. "a b" should match "b c a".
@@ -70,12 +74,16 @@ def get_transactions_for_account(account_id: str) -> list[SimpleTransaction]:
     return list(map(lambda x: SimpleTransaction.fromSQLTransaction(x), rows))
 
 def add_transaction(transaction: SimpleTransaction):
+    # Whenever we do this, we could/should upsert the category
+    if transaction.category_name:
+        save_category(transaction.user_id, transaction.category_name)
+        transaction.category_id = get_category_id(transaction.user_id, transaction.category_name)
     sql_statement = """
         INSERT INTO transactions
-            (id, user_id, account_id, date, name, amount, notes)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+            (id, user_id, account_id, category_id, date, name, amount, notes)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     """
-    sql_data = (transaction.id, transaction.user_id, transaction.account_id, transaction.date, transaction.name or "", transaction.amount, transaction.note or "")
+    sql_data = (transaction.id, transaction.user_id, transaction.account_id, transaction.category_id, transaction.date, transaction.name or "", transaction.amount, transaction.note or "")
 
     if transaction.pending_transaction_id:
         # TODO: might be a good time to copy over user-related values from
@@ -94,6 +102,7 @@ def modify_transaction(transaction: SimpleTransaction):
         UPDATE transactions
         SET
         account_id = IFNULL(%s, account_id),
+        category_id = IFNULL(%s, category_id),
         date = IFNULL(%s, date),
         name = IFNULL(%s, name),
         amount = IFNULL(%s, amount),
@@ -102,6 +111,7 @@ def modify_transaction(transaction: SimpleTransaction):
     """
     sql_data = (
         transaction.account_id,
+        int(transaction.category_id) if transaction.category_id else None,
         transaction.date,
         transaction.name,
         transaction.amount,

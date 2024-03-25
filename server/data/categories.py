@@ -1,4 +1,4 @@
-from data.sql import db_read_list, db_write
+from data.sql import db_read_list, db_read_value, db_write
 from model import Category
 
 from mysql.connector.errors import IntegrityError
@@ -21,17 +21,29 @@ def init_categories(user_id: str):
     except IntegrityError:
         print("Error initializing categories for user {}".format(user_id))
 
-def create_category(user_id: str, name: str):
-    # TODO: support nested categories
-    sql_statement = """
+def save_category(user_id, name):
+    # This seems to be the best method to "upsert": simple, efficient, doesn't ignore other errors.
+    statement = """
         INSERT INTO categories (user_id, name)
         VALUES (%s, %s)
+        ON DUPLICATE KEY UPDATE name = name;
     """
-    sql_data = (user_id, name)
+    data = (user_id, name)
     try:
-        db_write(sql_statement, sql_data)
+        db_write(statement, data)
     except IntegrityError:
-        print("WARNING: presumed duplicate category name {} for user {}".format(name, user_id))
+        print("WARNING: error saving category name {} for user {}".format(name, user_id))
+
+def get_category_id(user_id: str, name: str) -> int:
+    statement = """
+        SELECT id FROM categories WHERE user_id = %s AND name = %s;
+    """
+    data = (user_id, name)
+    try:
+        return db_read_value(statement, data)
+    except IntegrityError:
+        print("WARNING: error looking up category name {} for user {}".format(name, user_id))
+        return -1
 
 def update_category(id, name):
     sql_statement = """
