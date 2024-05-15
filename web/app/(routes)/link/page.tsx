@@ -1,17 +1,17 @@
 'use client'
 
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import UserContext from '@/app/lib/userContext'
 import {
     usePlaidLink,
     // PlaidLinkOptions,
     PlaidLinkOnSuccess,
   } from 'react-plaid-link';
 import * as server from  '@/app/services/bettermint';
+import getUser from '@/app/lib/firebase/getUser';
 
 export default function Link() {
     const [token, setToken] = useState<string | null>(null);
-    const { user } = useContext(UserContext);
+    const user = getUser();
 
     // These seems to be necessary otherwise we lose the user
     // when the component is recreated after returning from the Link UI
