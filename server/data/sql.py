@@ -1,11 +1,14 @@
+from dotenv import load_dotenv
 import mysql.connector
+import os
 from typing import Optional
 
+load_dotenv()
 mysql_config = {
-    'user': 'money-user',
-    'password': 'money-password',
-    'host': 'localhost',
-    'database': 'money',
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'host': os.getenv('DB_HOST'),
+    'database': os.getenv('DB_NAME'),
     'raise_on_warnings': True
 }
 
