@@ -1,5 +1,5 @@
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from util import snake_to_title_case
@@ -20,6 +20,7 @@ class SimpleTransaction:
     currency_code: str
     pending_transaction_id: Optional[str]
     note: Optional[str]
+    tags: list[str] = field(default_factory=list)
 
     @staticmethod
     def fromPlaidTransaction(txnObj, userId):

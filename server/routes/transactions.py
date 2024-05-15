@@ -65,7 +65,9 @@ def transactions():
 @app.route('/transactions/<transaction_id>', methods = ['GET', 'PATCH', 'DELETE'])
 def transaction(transaction_id):
     if request.method == 'GET':
-        return jsonify(get_transaction(transaction_id))
+        transaction = get_transaction(transaction_id)
+        transaction.tags = get_transaction_tags(transaction_id)
+        return jsonify(transaction)
     if request.method == 'PATCH':
         # This method DNE?
         # d = datetime.strptime(request.json['date'], '%Y-%m-%d')

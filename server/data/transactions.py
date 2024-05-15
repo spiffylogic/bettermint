@@ -73,6 +73,15 @@ def get_transactions_for_account(account_id: str) -> list[SimpleTransaction]:
     rows = db_read_list(sql_statement, sql_data)
     return list(map(lambda x: SimpleTransaction.fromSQLTransaction(x), rows))
 
+def get_transaction_tags(transaction_id: str) -> list[str]:
+    sql_data = (transaction_id, )
+    sql_statement = """
+        SELECT name FROM tags
+        INNER JOIN tag_map ON tag_map.tag_id = tags.id
+        WHERE tag_map.transaction_id = %s;
+    """
+    return list(map(lambda x: x['name'], db_read_list(sql_statement, sql_data)))
+
 def add_transaction(transaction: SimpleTransaction):
     # Whenever we do this, we could/should upsert the category
     if transaction.category_name:
