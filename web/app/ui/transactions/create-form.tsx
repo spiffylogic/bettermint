@@ -18,6 +18,7 @@ async function createTransaction(userId: string, formData: FormData) {
       name: '',
       amount: Number(formData.get('amount')),
       note: formData.get('notes')?.toString() || '',
+      tags: [], // TODO: support tags
     };
     server.createTransaction(userId, tx);
 }

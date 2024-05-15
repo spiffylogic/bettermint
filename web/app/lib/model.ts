@@ -11,6 +11,7 @@ export interface Transaction {
     name: string;
     amount: number;
     note: string;
+    tags: string[];
 }
 
 export interface Category {

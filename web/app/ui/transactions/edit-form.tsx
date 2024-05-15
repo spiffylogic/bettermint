@@ -6,6 +6,7 @@ import { Button } from '@/app/ui/button';
 import { Select, Option } from '@/app/ui/material';
 
 import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { Chip } from '@material-tailwind/react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -20,6 +21,7 @@ async function modifyTransaction(id: string, category_id: string | null, formDat
       name: formData.get('name')?.toString() || '',
       amount: Number(formData.get('amount')),
       note: formData.get('notes')?.toString() || '',
+      tags: [] // TODO: support tag modification
     };
     server.modifyTransaction(tx);
   }
@@ -81,6 +83,18 @@ export default function EditTransactionForm({transaction, categories}: {transact
               <Option key={c.id} value={c.id}>{c.name}</Option>)
             )}
           </Select>
+        </div>
+
+        {/* Tags */}
+        <div className="mb-4">
+          <label className="mb-2 block text-sm">
+            Tags (readonly)
+          </label>
+          <div className="flex gap-2">
+            {transaction.tags.map((tag: string) => (
+              <Chip key={tag} variant="ghost" value={tag} className="rounded-full" />
+            ))}
+          </div>
         </div>
 
         {/* Notes */}
