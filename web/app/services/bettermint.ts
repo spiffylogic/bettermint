@@ -109,3 +109,11 @@ export async function getCategories(userId: string) {
     const data = await response.json();
     return data;
 }
+
+export async function createCategory(userId: string, name: string) {
+    console.log(`CREATE CATEGORY ${name}`);
+}
+
+export async function modifyCategory(userId: string, categoryId: string, name: string) {
+    console.log(`MODIFY CATEGORY ${categoryId} -> ${name}`);
+}
