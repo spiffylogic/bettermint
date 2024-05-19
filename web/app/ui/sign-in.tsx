@@ -1,6 +1,6 @@
 'use client';
 
-import getUser from '@/app/lib/firebase/getUser';
+import useUser from '@/app/lib/firebase/getUser';
 import { ArrowRightIcon, PowerIcon } from '@heroicons/react/24/outline';
 
 import Link from 'next/link';
@@ -9,7 +9,7 @@ import { Fragment } from 'react';
 
 export default function SignIn() {
     const router = useRouter();
-    const user = getUser();
+    const user = useUser();
 
     return (
         <Fragment>

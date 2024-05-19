@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import { firebaseAuth } from '@/app/lib/firebase/firebase-config'
 import { useRouter } from 'next/navigation'
 
-export default function getUser(): User | null {
+export default function useUser(): User | null {
 	const [user, setUser] = useState<User | null>(null)
 	const router = useRouter()
 

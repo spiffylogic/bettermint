@@ -7,11 +7,11 @@ import {
     PlaidLinkOnSuccess,
   } from 'react-plaid-link';
 import * as server from  '@/app/services/bettermint';
-import getUser from '@/app/lib/firebase/getUser';
+import useUser from '@/app/lib/firebase/getUser';
 
 export default function Link() {
     const [token, setToken] = useState<string | null>(null);
-    const user = getUser();
+    const user = useUser();
 
     // These seems to be necessary otherwise we lose the user
     // when the component is recreated after returning from the Link UI
