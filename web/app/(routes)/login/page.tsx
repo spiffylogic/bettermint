@@ -36,7 +36,7 @@ export default function LoginPage() {
         }
       });
     });
-  }, []);
+  }, [router]);
 
   function signIn() {
     signInWithRedirect(firebaseAuth, provider);
